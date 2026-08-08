@@ -1,0 +1,46 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base
+  title="Support — Katabarwa Labs"
+  description="Support and documentation for Katabarwa Labs applications across the Azure, AWS, and Atlassian marketplaces."
+>
+  <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
+    <div class="wrap pt-[52px] pb-[46px]">
+      <h1 class="text-[clamp(26px,4vw,36px)] font-extrabold tracking-[-0.02em] text-white">Support</h1>
+      <p class="mt-2 text-[15px] text-[#a9bce6]">Katabarwa Labs Inc</p>
+    </div>
+  </section>
+
+  <main class="prose-page mx-auto max-w-[760px] px-6 pt-11 pb-[72px]">
+    <div class="callout"><strong>Contact:</strong> email
+      <a class="text-brand" href="mailto:abahomyster@gmail.com">abahomyster@gmail.com</a> and we’ll respond as
+      quickly as we can. Please include the product name, the marketplace you bought it on, and (if
+      relevant) the region or instance.</div>
+
+    <h2>Before you write in</h2>
+    <ul>
+      <li><strong>Our apps run in your own environment.</strong> They deploy into your Azure
+        subscription, AWS account, or Atlassian/SaaS instance and run under an identity you grant.</li>
+      <li><strong>Nothing leaves your tenant.</strong> Alerts and reports are delivered only to the
+        Microsoft Teams, Slack, or email endpoint you configured during setup — check that first if
+        you’re not receiving them.</li>
+      <li><strong>Most products ship read-only / dry-run by default.</strong> Anything that changes or
+        deletes must be explicitly enabled after you review a report.</li>
+    </ul>
+
+    <h2>Common setup notes</h2>
+    <ul>
+      <li>Each product includes a one-time post-deploy step to grant its identity the least-privilege
+        role it needs — see the product’s listing page for the exact command.</li>
+      <li>Microsoft Teams delivery uses a Power Automate “Workflows” webhook (the classic Office 365
+        connector was retired); paste that webhook URL into the app’s configuration.</li>
+      <li>If a scheduled run is missed, most products self-heal on the next run.</li>
+    </ul>
+
+    <h2>Billing</h2>
+    <p>Subscriptions are billed by the marketplace you purchased on (Microsoft, AWS, or Atlassian). For
+      invoice or payment questions, use your marketplace account; for anything product-related, email
+      us directly.</p>
+  </main>
+</Base>

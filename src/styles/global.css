@@ -1,0 +1,53 @@
+@import "tailwindcss";
+
+/* ---- design tokens (Tailwind v4 theme) ---- */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  --color-ink: #0d1830;
+  --color-ink2: #243248;
+  --color-muted: #5b6a84;
+  --color-line: #e7ecf5;
+  --color-soft: #f6f8fd;
+  --color-brand: #3b5bdb;
+  --color-branddeep: #1e337e;
+  --color-brandsoft: #eaf0ff;
+  --color-accent: #0ea5a3;
+}
+
+html { scroll-behavior: smooth; }
+body { font-family: var(--font-sans); }
+
+/* ---- reusable component classes ---- */
+@layer components {
+  .wrap { @apply mx-auto max-w-[1080px] px-6; }
+
+  .eyebrow { @apply text-[12.5px] font-semibold uppercase tracking-[0.16em] text-accent; }
+
+  .btn { @apply inline-flex items-center gap-2 rounded-[10px] px-[18px] py-[10px] text-[15px] font-semibold transition; }
+  .btn-primary { @apply bg-brand text-white hover:bg-[#3350c9] hover:-translate-y-px; }
+  .btn-ghost { @apply border border-white/30 text-white hover:bg-white/10; }
+  .btn-line { @apply border border-line bg-white text-ink hover:border-[#c9d4ea]; }
+
+  .card { @apply rounded-2xl border border-line bg-white p-6 transition; }
+  .card:hover { @apply -translate-y-1 border-[#dbe4f4]; box-shadow: 0 2px 4px rgba(13,24,48,.06), 0 26px 48px -22px rgba(13,24,48,.36); }
+  .card { box-shadow: 0 1px 2px rgba(13,24,48,.05), 0 14px 30px -18px rgba(13,24,48,.28); }
+
+  .ic { @apply mb-3.5 flex h-[42px] w-[42px] items-center justify-center rounded-[11px] bg-brandsoft text-brand; }
+
+  .prose-page :where(h2) { @apply mt-8 mb-2 text-[19px] font-bold text-ink; }
+  .prose-page :where(p, li) { @apply text-[16px] text-ink2; }
+  .prose-page :where(ul) { @apply list-disc pl-6; }
+  .prose-page :where(li) { @apply my-1.5; }
+  .callout { @apply my-5 rounded-xl border border-[#d4e0ff] bg-brandsoft p-[16px] text-ink2; }
+}
+
+/* subtle grid overlay used on the dark hero */
+.grid-overlay {
+  background-image:
+    linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  -webkit-mask-image: radial-gradient(80% 70% at 50% 0%, #000, transparent);
+          mask-image: radial-gradient(80% 70% at 50% 0%, #000, transparent);
+}

@@ -1,0 +1,30 @@
+---
+import Logo from './Logo.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<footer class="bg-[#0b1430] text-[#b9c6e6]">
+  <div class="wrap flex flex-wrap justify-between gap-7 py-11">
+    <div class="max-w-[300px]">
+      <a href={`${base}/`} class="mb-3 flex items-center gap-2.5 font-bold text-white">
+        <Logo gid="ftr" />
+        <span>Katabarwa&nbsp;Labs</span>
+      </a>
+      <p class="text-[14.5px] text-[#93a3c8]">Operational tools that run in your own cloud — no vendor backend, billed by the marketplace.</p>
+    </div>
+    <div>
+      <h4 class="mb-3 text-[13px] font-semibold uppercase tracking-[0.12em] text-white">Marketplaces</h4>
+      <a href={`${base}/#marketplaces`} class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Microsoft Azure</a>
+      <a href={`${base}/#marketplaces`} class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">AWS Marketplace</a>
+      <a href={`${base}/#marketplaces`} class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Atlassian</a>
+    </div>
+    <div>
+      <h4 class="mb-3 text-[13px] font-semibold uppercase tracking-[0.12em] text-white">Company</h4>
+      <a href={`${base}/privacy`} class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Privacy policy</a>
+      <a href={`${base}/support`} class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Support</a>
+      <a href="mailto:abahomyster@gmail.com" class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Contact</a>
+    </div>
+  </div>
+  <div class="border-t border-white/10">
+    <div class="wrap py-[18px] text-[13.5px] text-[#8ea0c8]">© 2026 Katabarwa Labs Inc. All rights reserved.</div>
+  </div>
+</footer>

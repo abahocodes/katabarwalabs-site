@@ -1,0 +1,122 @@
+---
+import Base from '../layouts/Base.astro';
+
+const archetypes = [
+  ['Audit-log retention & export', 'Keep compliance evidence past the platform’s short retention window.'],
+  ['Orphaned-owner cleanup', 'Reclaim resources and seats left behind by people who’ve left.'],
+  ['Access governance', 'Who can do what, permission drift, and audit-ready reports.'],
+  ['Credential & certificate hygiene', 'Alert before secrets and certificates expire and break production.'],
+  ['Cost, waste & coverage gaps', 'Find leaks, orphaned resources, and assets with no backup.'],
+];
+const marketplaces = ['Microsoft Azure Marketplace', 'Microsoft AppSource', 'AWS Marketplace', 'Atlassian Marketplace'];
+
+const heroBg =
+  'radial-gradient(1100px 460px at 78% -10%, #3a5bd9 0%, transparent 60%),' +
+  'radial-gradient(760px 420px at 8% 0%, #16b6a6 0%, transparent 55%),' +
+  'linear-gradient(160deg,#0a1636 0%,#122a63 58%,#20408f 100%)';
+---
+<Base
+  title="Katabarwa Labs — enterprise tools that run in your own cloud"
+  description="Katabarwa Labs builds small, single-purpose operational tools that deploy entirely in your own cloud or SaaS tenant — no vendor backend, nothing leaves your environment — billed flat-rate through the Azure, AWS, and Atlassian marketplaces."
+>
+  <!-- hero -->
+  <section class="relative overflow-hidden text-[#eaf0ff]" style={`background:${heroBg}`}>
+    <div class="grid-overlay pointer-events-none absolute inset-0 opacity-50"></div>
+    <div class="wrap relative z-10 pt-[86px] pb-[92px]">
+      <span class="eyebrow">Katabarwa Labs</span>
+      <h1 class="mt-4 max-w-[16ch] text-[clamp(30px,5vw,50px)] font-extrabold leading-[1.08] tracking-[-0.02em] text-white">
+        Enterprise tools that run in your own cloud.
+      </h1>
+      <p class="mt-[18px] max-w-[60ch] text-[clamp(17px,2.3vw,20px)] leading-relaxed text-[#c8d6f7]">
+        Small, single-purpose operational apps that deploy entirely inside your own cloud or SaaS
+        tenant — no vendor backend, nothing leaves your environment — billed flat-rate by the
+        marketplace you already use.
+      </p>
+      <div class="mt-8 flex flex-wrap gap-3">
+        <a href="#coverage" class="btn btn-primary">Explore the portfolio</a>
+        <a href="mailto:abahomyster@gmail.com" class="btn btn-ghost">Talk to us</a>
+      </div>
+      <div class="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-[14px] text-[#a9bce6]">
+        {['Runs in your environment', 'Read-only by default', 'Billed by the marketplace'].map((t) => (
+          <span class="flex items-center gap-2.5"><span class="inline-block h-1.5 w-1.5 rounded-full bg-accent"></span><b class="font-semibold text-[#dfe8fb]">{t}</b></span>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- how it works -->
+  <section id="how" class="border-b border-line py-[66px]">
+    <div class="wrap">
+      <span class="eyebrow">How it works</span>
+      <h2 class="mt-2 text-[clamp(23px,3.2vw,30px)] font-extrabold tracking-[-0.02em]">The tool runs where your data already lives.</h2>
+      <p class="mt-3 max-w-[64ch] text-[17px] text-muted">
+        One idea, applied on every enterprise marketplace: deploy into the customer’s own environment
+        and let the marketplace handle billing. We operate no servers, so “nothing leaves your tenant”
+        is literally true — exactly what your security review wants to hear.
+      </p>
+      <div class="mt-[34px] grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="card">
+          <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 4.5-3 7.6-7 9-4-1.4-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+          <h3 class="text-[16.5px] font-bold">Runs in your environment</h3>
+          <p class="mt-1.5 text-[14.5px] leading-relaxed text-muted">A serverless function or managed package deploys into your own subscription, account, or instance under an identity you control — read-only by default.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg></div>
+          <h3 class="text-[16.5px] font-bold">No vendor backend</h3>
+          <p class="mt-1.5 text-[14.5px] leading-relaxed text-muted">We host nothing and receive none of your operational data. Alerts go only to the Slack, Teams, or email endpoint you configure. Remove the app and every trace is gone.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 13.5l-7 7-9.5-9.5V4h7z"/><path d="M7.5 8h.01"/></svg></div>
+          <h3 class="text-[16.5px] font-bold">Flat, predictable pricing</h3>
+          <p class="mt-1.5 text-[14.5px] leading-relaxed text-muted">The marketplace bills one flat price and pays us — no metering surprises, no invoicing, and no separate contract to negotiate.</p>
+        </div>
+        <div class="card">
+          <div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3.5"/></svg></div>
+          <h3 class="text-[16.5px] font-bold">One job, done well</h3>
+          <p class="mt-1.5 text-[14.5px] leading-relaxed text-muted">Focused tools that solve a single recurring admin pain — and prove their value the first time they fire.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- what we cover -->
+  <section id="coverage" class="border-b border-line py-[66px]">
+    <div class="wrap">
+      <span class="eyebrow">What we cover</span>
+      <h2 class="mt-2 text-[clamp(23px,3.2vw,30px)] font-extrabold tracking-[-0.02em]">The same handful of pains, on every platform.</h2>
+      <p class="mt-3 max-w-[64ch] text-[17px] text-muted">We build each once and port the shape across marketplaces.</p>
+      <div class="mt-[30px] overflow-hidden rounded-2xl border border-line bg-white">
+        {archetypes.map(([k, v], i) => (
+          <div class={`grid grid-cols-1 gap-x-5 gap-y-1 px-[22px] py-[18px] sm:grid-cols-[240px_1fr] ${i > 0 ? 'border-t border-line' : ''}`}>
+            <div class="font-bold text-ink">{k}</div>
+            <div class="text-[15px] text-muted">{v}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- marketplaces -->
+  <section id="marketplaces" class="border-b border-line py-[66px]">
+    <div class="wrap">
+      <span class="eyebrow">Where to find us</span>
+      <h2 class="mt-2 text-[clamp(23px,3.2vw,30px)] font-extrabold tracking-[-0.02em]">Rolling out across the marketplaces you already buy from.</h2>
+      <div class="mt-7 flex flex-wrap gap-3">
+        {marketplaces.map((m) => (
+          <span class="inline-flex items-center gap-2.5 rounded-full border border-line bg-soft px-[18px] py-2.5 text-[14.5px] font-semibold text-ink2">{m}</span>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- contact -->
+  <section class="bg-soft">
+    <div class="wrap flex flex-wrap items-center justify-between gap-5 py-11">
+      <div>
+        <h2 class="text-[24px] font-extrabold tracking-[-0.02em]">Have a pain worth productizing?</h2>
+        <p class="mt-1.5 text-muted">Tell us the admin chore you keep re-solving — it’s probably our next app.</p>
+      </div>
+      <a href="mailto:abahomyster@gmail.com" class="btn btn-primary">abahomyster@gmail.com</a>
+    </div>
+  </section>
+</Base>
