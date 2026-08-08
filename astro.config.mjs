@@ -9,9 +9,13 @@ import tailwindcss from '@tailwindcss/vite';
 // (abahocodes.github.io/katabarwalabs-site/). When the katabarwalabs.com custom
 // domain is attached, change base to '/' and add public/CNAME — links are
 // base-aware (import.meta.env.BASE_URL), so nothing else needs to change.
+// `base` is env-driven so the same source serves two targets:
+//  • default (GitHub Pages preview) → '/katabarwalabs-site'
+//  • AWS/CloudFront at the custom domain → build with SITE_BASE=/ (root)
+// Links are base-aware (import.meta.env.BASE_URL), so nothing else changes.
 export default defineConfig({
-  site: 'https://katabarwalabs.com',
-  base: '/katabarwalabs-site',
+  site: 'https://katabarwalabs.dev',
+  base: process.env.SITE_BASE ?? '/katabarwalabs-site',
   vite: {
     plugins: [tailwindcss()],
   },

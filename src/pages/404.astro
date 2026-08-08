@@ -1,0 +1,14 @@
+---
+import Base from '../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Base title="Page not found — Katabarwa Labs" description="The page you’re looking for doesn’t exist.">
+  <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
+    <div class="wrap flex flex-col items-start gap-4 py-[96px]">
+      <span class="eyebrow">404</span>
+      <h1 class="text-[clamp(28px,5vw,44px)] font-extrabold tracking-[-0.02em] text-white">This page took the day off.</h1>
+      <p class="max-w-[52ch] text-[17px] text-[#c8d6f7]">The page you’re looking for doesn’t exist or has moved.</p>
+      <a href={`${base}/`} class="btn btn-primary mt-2">Back to home</a>
+    </div>
+  </section>
+</Base>
