@@ -1,0 +1,71 @@
+---
+import Base from '../../layouts/Base.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
+// Hand-maintained post list (newest first). Add an entry when you publish a post.
+const posts = [
+  {
+    slug: 'azure-spending-limit-hard-cap',
+    title: 'How to put a hard spending cap on Azure (and actually stop the bill)',
+    excerpt: 'Azure has no native hard spending limit on pay-as-you-go. Here is what the platform does and does not do, the DIY options, and how to make compute actually stop at your cap.',
+    tag: 'Azure cost management',
+    date: 'August 26, 2026',
+  },
+  {
+    slug: 'set-an-entra-id-account-to-expire',
+    title: 'How to set a Microsoft Entra ID account to expire on a date',
+    excerpt: 'On-prem Active Directory has accountExpires. Entra ID still does not. Here is how to add automatic account expiry for contractors, interns, and temps.',
+    tag: 'Microsoft Entra ID',
+    date: 'August 26, 2026',
+  },
+  {
+    slug: 'find-and-delete-orphaned-azure-resources',
+    title: 'Find and delete orphaned Azure resources that are still costing you money',
+    excerpt: 'Unattached disks, NICs, public IPs, and empty App Service plans keep billing after the thing they belonged to is gone. Here is how to find them and what they cost.',
+    tag: 'Azure cost management',
+    date: 'August 26, 2026',
+  },
+  {
+    slug: 'who-created-an-azure-resource-createdby-tag',
+    title: 'How to see who created an Azure resource and when (CreatedBy / CreatedOn)',
+    excerpt: 'Azure has no native creator or creation-date property on resources. Here is how to capture who created a resource and when, using the Activity Log and tags.',
+    tag: 'Azure management',
+    date: 'August 26, 2026',
+  },
+  {
+    slug: 'just-in-time-azure-role-elevation-without-pim',
+    title: 'Just-in-time Azure role elevation without paying for PIM',
+    excerpt: 'PIM gives just-in-time role activation but requires Entra ID P2 per user. Here is the DIY approach and a flat-fee alternative for Azure resource roles.',
+    tag: 'Azure security / IAM',
+    date: 'August 26, 2026',
+  },
+];
+---
+<Base
+  title="Blog — Katabarwa Labs"
+  description="Practical guides for Azure administrators on cost, identity lifecycle, secrets, and cleanup, from the team building in-tenant Azure tools."
+>
+  <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
+    <div class="wrap pt-[52px] pb-[46px]">
+      <p class="eyebrow">Guides for Azure admins</p>
+      <h1 class="mt-2 text-[clamp(26px,4vw,36px)] font-extrabold tracking-[-0.02em] text-white">Blog</h1>
+      <p class="mt-2 max-w-[640px] text-[15px] text-[#a9bce6]">
+        Straight, practical answers to the Azure operations questions we kept seeing, from cost caps
+        to account expiry to orphaned-resource cleanup.
+      </p>
+    </div>
+  </section>
+
+  <main class="wrap py-12">
+    <div class="grid gap-5 sm:grid-cols-2">
+      {posts.map((p) => (
+        <a href={`${base}/blog/${p.slug}`} class="card block">
+          <p class="eyebrow">{p.tag}</p>
+          <h2 class="mt-2 text-[19px] font-bold leading-snug text-ink">{p.title}</h2>
+          <p class="mt-2 text-[15px] text-ink2">{p.excerpt}</p>
+          <p class="mt-3 text-[13px] text-muted">{p.date}</p>
+        </a>
+      ))}
+    </div>
+  </main>
+</Base>

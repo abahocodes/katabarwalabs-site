@@ -1,0 +1,79 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/katabarwalabs.auto-tagger';
+---
+<BlogPost
+  title="How to see who created an Azure resource and when (CreatedBy / CreatedOn)"
+  description="Azure has no native creator or creation-date property on resources. Here is how to capture who created a resource and when, using the Activity Log and tags."
+  tag="Azure management"
+  pubDate="August 26, 2026"
+  readMins={5}
+>
+  <p>
+    Open the resource list in the Azure portal and you cannot sort by creation date, and there is no
+    column for who created a resource. Both are among the longest-standing requests on the Azure
+    feedback forum, across several ideas with hundreds of combined votes. Without them, cost
+    allocation, cleanup, and audit questions like "who spun this up and when?" are hard to answer.
+  </p>
+
+  <h2>Why Azure cannot tell you this out of the box</h2>
+  <ul>
+    <li><strong>Resources have no built-in <code>CreatedBy</code> or <code>CreatedOn</code>
+      property.</strong> The metadata simply is not attached to the resource.</li>
+    <li><strong>The Activity Log has the answer, but only for about 90 days.</strong> Every create
+      operation records the caller and timestamp, but the log ages out and the data lives in the log,
+      not on the resource, so you cannot filter or report on it in the resource list.</li>
+    <li><strong>Azure Resource Graph exposes <code>createdTime</code> for some resource types</strong>
+      but not consistently across all of them, so it is an incomplete answer.</li>
+  </ul>
+
+  <h2>The DIY approach: read the Activity Log, write tags</h2>
+  <p>
+    The durable fix is to capture the creator and timestamp while they are still in the Activity Log
+    and stamp them onto the resource as <strong>tags</strong>, which do persist and can be shown as
+    columns:
+  </p>
+  <ul>
+    <li>Run a <strong>scheduled job</strong> (a Function on a timer or an Automation runbook) that
+      reads the subscription Activity Log for recent write / create operations.</li>
+    <li>For each new resource, pull the <strong>caller</strong> (the user or service principal) and the
+      <strong>event timestamp</strong>.</li>
+    <li>Write them as tags, for example <code>CreatedBy</code> and <code>CreatedOn</code>, onto the
+      resource.</li>
+    <li>In the portal, use <strong>Manage view &rarr; Edit columns</strong> to add those tags as
+      columns, and you get the sortable creator and creation-date view the resource list is missing.</li>
+  </ul>
+  <p>
+    The catch is timing: because the Activity Log only retains about 90 days, the job has to run
+    regularly (a resource created and never swept within the window loses its attribution forever).
+  </p>
+
+  <h2>A ready-made option: Auto Tagger</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Auto Tagger</a>
+    on the Azure Marketplace. It runs as a managed application inside your own subscription, so nothing
+    leaves your tenant.
+  </div>
+  <p>
+    Auto Tagger is that pattern packaged. It reads the subscription Activity Log every 15 minutes and
+    stamps <code>CreatedBy</code> and <code>CreatedOn</code> tags on every new resource, so you get
+    creator and creation-date attribution you can sort, filter, add as portal columns, and use for cost
+    allocation. It runs entirely in your own subscription with Reader and Tag Contributor permissions
+    only, so it writes tags and nothing else.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native creator / created-date property:</strong> none on Azure resources.</li>
+    <li><strong>Activity Log:</strong> has the data, retained about 90 days, not shown on the resource.</li>
+    <li><strong>Durable fix:</strong> copy that data into tags, then show tags as columns.</li>
+    <li><strong>Least privilege:</strong> reading the log and writing tags needs Reader plus Tag
+      Contributor.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/find-and-delete-orphaned-azure-resources`}>find orphaned Azure resources still costing you money</a>.
+  </p>
+</BlogPost>

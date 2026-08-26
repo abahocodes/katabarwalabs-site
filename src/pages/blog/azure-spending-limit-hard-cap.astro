@@ -1,0 +1,90 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/katabarwalabs.cost-breaker';
+---
+<BlogPost
+  title="How to put a hard spending cap on Azure (and actually stop the bill)"
+  description="Azure has no native hard spending limit on pay-as-you-go. Here is what the platform does and does not do, the DIY options, and how to make compute actually stop when you hit your cap."
+  tag="Azure cost management"
+  pubDate="August 26, 2026"
+  readMins={6}
+>
+  <p>
+    The single most requested Azure billing feature, open on the feedback forum for over a decade with
+    thousands of votes, is a simple one: a hard spending cap. You set a number, and when the month
+    reaches it, Azure stops charging you. A misconfigured resource, a runaway script, or an attack can
+    otherwise run your bill into four or five figures with nothing standing in the way.
+  </p>
+  <p>
+    Here is the honest state of things, the do-it-yourself options, and how to make your compute
+    actually stop at a cap you choose.
+  </p>
+
+  <h2>Does Azure have a spending limit?</h2>
+  <p>
+    Only in a narrow case. The built-in <strong>spending limit</strong> exists on free, trial, and
+    some credit-based (MSDN / Visual Studio) subscriptions, where it deprovisions services when the
+    credit runs out. On a <strong>pay-as-you-go or Enterprise Agreement subscription there is no hard
+    cap</strong>. You can spend without limit.
+  </p>
+  <p>
+    Cost Management <strong>Budgets</strong> look like the answer but are not. A budget is an alerting
+    construct: when spend crosses a threshold it sends an email or fires an action group. It does not
+    stop anything on its own. By the time the alert lands, the money is already being spent, and it
+    keeps being spent until a human reacts.
+  </p>
+
+  <h2>The DIY approach: budget alert plus an automation that stops compute</h2>
+  <p>
+    You can build enforcement yourself. The usual pattern is:
+  </p>
+  <ul>
+    <li>Create a Cost Management <strong>budget</strong> at the amount you want to cap.</li>
+    <li>Attach an <strong>action group</strong> to the budget that triggers at 100 percent (and a
+      warning threshold like 80 percent).</li>
+    <li>Point that action group at a <strong>Logic App</strong> or an <strong>Azure Automation
+      runbook</strong> that enumerates running virtual machines and deallocates them, and stops running
+      App Service plans, so the biggest meters stop turning.</li>
+    <li>Give the automation identity permission to read cost and to stop compute, and add an exclusion
+      list so it never touches something production-critical.</li>
+  </ul>
+  <p>
+    This works, with two honest caveats. First, cost data is not real time, so there is lag between the
+    true spend and when the budget evaluates it. Second, and more importantly, you can stop
+    <strong>compute</strong>, but storage, egress, and already-committed charges keep billing. That is
+    why a spending cap on Azure is realistically a <strong>circuit breaker for compute</strong>, not a
+    guaranteed hard ceiling. Anyone who promises a true hard cap on pay-as-you-go is overselling it.
+  </p>
+
+  <h2>A ready-made option: Cost Breaker</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Cost Breaker</a>
+    on the Azure Marketplace. It is a managed application that deploys into your own subscription, so
+    nothing leaves your tenant and there is no vendor backend.
+  </div>
+  <p>
+    If you would rather not build and maintain the automation above, Cost Breaker is that pattern
+    packaged. It checks your month-to-date spend every hour, posts a one-time warning to your Microsoft
+    Teams channel at a threshold you set, and at 100 percent of your cap it deallocates non-exempt
+    virtual machines and stops non-exempt web apps so the meter stops climbing. Resources you tag
+    <code>costbreaker-exempt=true</code> are never touched. It runs entirely in your own subscription
+    under a managed identity you control, and it ships in dry-run mode (it reports what it would stop
+    without stopping anything) until you arm it. The same honest caveat applies: it stops compute, not
+    storage or committed charges.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native hard cap on pay-as-you-go:</strong> none. Spending limit is credit-based
+      subscriptions only.</li>
+    <li><strong>Budgets:</strong> alert only, no enforcement.</li>
+    <li><strong>Enforcement:</strong> requires automation that stops compute, DIY or off the shelf.</li>
+    <li><strong>Realistic scope:</strong> a compute circuit breaker, not a guaranteed ceiling.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/find-and-delete-orphaned-azure-resources`}>find orphaned Azure resources still costing you money</a>.
+  </p>
+</BlogPost>

@@ -1,0 +1,84 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/katabarwalabs.identity-lifecycle';
+---
+<BlogPost
+  title="How to set a Microsoft Entra ID account to expire on a date"
+  description="On-prem Active Directory has accountExpires. Entra ID still does not. Here is how to add automatic account expiry for contractors, interns, and temporary staff."
+  tag="Microsoft Entra ID"
+  pubDate="August 26, 2026"
+  readMins={6}
+>
+  <p>
+    On-premises Active Directory has had an <code>accountExpires</code> attribute for decades: set a
+    date on a contractor or intern account, and it disables itself when that date passes. Cloud
+    Microsoft Entra ID (formerly Azure AD) still has no equivalent. This is one of the most requested
+    identity features on the feedback forum, with well over a thousand votes and years of comments from
+    admins who onboard temporary staff.
+  </p>
+  <p>
+    The result is that most teams fall back to a calendar reminder and a manual disable, which is easy
+    to miss and leaves orphaned, still-enabled accounts as a standing security and compliance risk.
+  </p>
+
+  <h2>What Entra ID gives you today</h2>
+  <ul>
+    <li><strong>No native account expiry date.</strong> There is no field to say "disable this account
+      on this date."</li>
+    <li><strong>Lifecycle Workflows and Access Reviews</strong> can help, but they are Microsoft Entra
+      ID Governance / P2 features (an added per-user license), and they are oriented toward joiner and
+      leaver flows and periodic guest reviews rather than a simple per-account expiry date.</li>
+    <li><strong>Guest cleanup</strong> for stale external users is a separate problem with the same
+      root cause: no built-in "disable after N days of no sign-in."</li>
+  </ul>
+
+  <h2>The DIY approach: a stored date plus a scheduled disable</h2>
+  <p>
+    You can reproduce <code>accountExpires</code> with a little glue:
+  </p>
+  <ul>
+    <li>Store an intended end date on each temporary account. A common choice is the
+      <code>employeeLeaveDateTime</code> property, or a custom extension attribute.</li>
+    <li>Run a <strong>scheduled job</strong> (Azure Automation runbook, a Function on a timer, or a
+      scheduled pipeline) daily that queries Microsoft Graph for accounts whose end date has passed and
+      disables them by setting <code>accountEnabled</code> to false.</li>
+    <li>Add warning steps so the owner and manager get a heads-up a few days before, not a silent
+      disable on the day.</li>
+    <li>Give the job identity the least-privilege Graph permission it needs and log every action.</li>
+  </ul>
+  <p>
+    This is reliable once built, but it is code you now own, test, and keep running as the Graph API
+    and your directory evolve.
+  </p>
+
+  <h2>A ready-made option: Identity Lifecycle</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Identity Lifecycle</a>
+    on the Azure Marketplace. It deploys into your own tenant as a managed application, so nothing
+    leaves your environment and there is no vendor backend.
+  </div>
+  <p>
+    Identity Lifecycle adds the expiry date Entra is missing. You set an end date on any contractor,
+    temp, or intern account, and it warns at 14, 7, and 1 days, then disables the account on the date.
+    The same app also cleans up stale guests: it flags guests with no recent sign-in, reports them to
+    Microsoft Teams, and disables them after a grace period you choose. It runs entirely in your own
+    tenant under a managed identity you control and ships dry-run by default, so you review the report
+    before anything changes.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native Entra account expiry:</strong> none, unlike on-prem AD.</li>
+    <li><strong>Governance features (P2):</strong> partial, license-gated, not a simple per-account
+      date.</li>
+    <li><strong>DIY:</strong> store an end date plus a daily Graph job that disables expired accounts.</li>
+    <li><strong>Removes access only:</strong> disabling an account is reversible and does not delete
+      data.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/azure-spending-limit-hard-cap`}>how to put a hard spending cap on Azure</a>.
+  </p>
+</BlogPost>

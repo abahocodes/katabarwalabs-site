@@ -1,0 +1,85 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/katabarwalabs.orphan-cleanup';
+---
+<BlogPost
+  title="Find and delete orphaned Azure resources that are still costing you money"
+  description="Unattached disks, NICs, public IPs, and empty App Service plans keep billing after the thing they belonged to is gone. Here is how to find them, what they cost, and how to clean up safely."
+  tag="Azure cost management"
+  pubDate="August 26, 2026"
+  readMins={6}
+>
+  <p>
+    Deleting a virtual machine in Azure does not always delete everything attached to it. Managed
+    disks, network interfaces, and public IP addresses can be left behind, and they keep billing every
+    month whether or not anything uses them. Over a year across a busy subscription, these orphans
+    quietly add up. This is exactly the pain behind the long-running, heavily-voted "delete a VM with
+    all its associated resources" request on the Azure feedback forum.
+  </p>
+
+  <h2>What counts as an orphaned resource</h2>
+  <ul>
+    <li><strong>Unattached managed disks.</strong> A disk whose owner VM is gone still bills for its
+      provisioned size and tier.</li>
+    <li><strong>Unassociated public IP addresses.</strong> A standard public IP with nothing attached
+      bills hourly.</li>
+    <li><strong>Orphaned network interfaces (NICs).</strong> Usually free on their own, but they clutter
+      the estate and block clean deletes.</li>
+    <li><strong>Empty App Service plans.</strong> A plan with no apps still charges for its tier.</li>
+    <li><strong>Old snapshots and unused load balancers or gateways</strong> in the same vein.</li>
+  </ul>
+
+  <h2>The DIY approach: Resource Graph queries</h2>
+  <p>
+    Azure Resource Graph is the fastest way to find these across every subscription at once. A couple of
+    starting points:
+  </p>
+  <p>Unattached managed disks:</p>
+  <ul>
+    <li><code>resources | where type =~ 'microsoft.compute/disks' | where properties.diskState == 'Unattached'</code></li>
+  </ul>
+  <p>Public IPs with nothing associated:</p>
+  <ul>
+    <li><code>resources | where type =~ 'microsoft.network/publicipaddresses' | where isnull(properties.ipConfiguration)</code></li>
+  </ul>
+  <p>
+    Azure Advisor also surfaces some idle and unattached resources under its cost recommendations, and
+    the portal now cleans up disks and NICs at VM-delete time if you opt in. But none of this gives you
+    a standing, all-up report of what is still billing after the fact, with an estimate of the monthly
+    cost, which is what you actually want for a recurring FinOps review.
+  </p>
+
+  <div class="callout">
+    <strong>Delete carefully.</strong> An unattached disk can still hold data you want, and a public IP
+    may be referenced in DNS or a firewall rule. Always review before deleting, and prefer a report you
+    can sign off on over a script that deletes on sight.
+  </div>
+
+  <h2>A ready-made option: Orphan Cleanup</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Orphan Cleanup</a>
+    on the Azure Marketplace. It runs as a managed application inside your own subscription, so nothing
+    leaves your tenant.
+  </div>
+  <p>
+    Orphan Cleanup runs a daily scan and lists every unattached disk, unassociated public IP, orphaned
+    NIC, and empty App Service plan, each with its estimated monthly cost, so you get a standing report
+    of what is still costing you after a delete. It is read-only by default, and any resource you tag
+    <code>orphan-cleanup-exempt=true</code> is never touched. It runs entirely in your own subscription
+    under a managed identity you control.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Deleting a VM</strong> can leave disks, NICs, and public IPs behind that keep billing.</li>
+    <li><strong>Find them</strong> with Azure Resource Graph queries or Azure Advisor.</li>
+    <li><strong>Biggest cost drivers:</strong> unattached premium disks and empty App Service plans.</li>
+    <li><strong>Clean up safely:</strong> review a report first, exclude anything intentional.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/azure-spending-limit-hard-cap`}>how to put a hard spending cap on Azure</a>.
+  </p>
+</BlogPost>

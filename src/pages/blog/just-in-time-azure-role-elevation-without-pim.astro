@@ -1,0 +1,80 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/katabarwalabs.jit-rbac';
+---
+<BlogPost
+  title="Just-in-time Azure role elevation without paying for PIM"
+  description="Privileged Identity Management gives just-in-time role activation, but it requires Entra ID P2 per user. Here is the DIY approach and a flat-fee alternative for Azure resource roles."
+  tag="Azure security / IAM"
+  pubDate="August 26, 2026"
+  readMins={6}
+>
+  <p>
+    Standing administrator access is a liability. The safer pattern is just-in-time (JIT) elevation:
+    an admin holds no privileged role day to day, requests it when needed, and the role is granted for
+    a short, time-boxed window and then removed automatically. Microsoft's built-in answer is
+    Privileged Identity Management (PIM), and it is good. The catch is the price.
+  </p>
+
+  <h2>Why PIM is not always the answer</h2>
+  <ul>
+    <li><strong>PIM requires Microsoft Entra ID P2</strong>, licensed per user across your tenant. If
+      you only need JIT for a handful of admins on a few Azure resource scopes, paying a per-user
+      premium tenant-wide is a lot of overhead for a small need.</li>
+    <li>PIM covers both directory roles and Azure resource (RBAC) roles. Many teams only actually need
+      time-boxed elevation for <strong>Azure resource roles</strong> such as Contributor or Owner on a
+      resource group or subscription, which is the narrower, cheaper problem.</li>
+  </ul>
+
+  <h2>The DIY approach: an approval workflow that grants and revokes</h2>
+  <p>
+    You can build a lightweight JIT flow without P2:
+  </p>
+  <ul>
+    <li>A <strong>request</strong> step: someone asks for a role at a scope for a duration (for example
+      Reader on <code>rg-prod</code> for one hour).</li>
+    <li>An <strong>approval</strong> step: an approver confirms, ideally from Microsoft Teams so it is
+      fast and auditable.</li>
+    <li>A <strong>grant</strong> step: create the Azure role assignment at the requested scope.</li>
+    <li>A <strong>revoke</strong> step: a scheduled job that removes the assignment when the time box
+      expires, so access never lingers.</li>
+    <li>Sign the approval links and log every action so the trail is tamper-evident.</li>
+  </ul>
+  <p>
+    This is a real system to build and maintain: state for pending requests, token signing, the
+    scheduled cleanup, and the Teams integration.
+  </p>
+
+  <h2>A ready-made option: JIT RBAC</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">JIT RBAC</a>
+    on the Azure Marketplace, a flat-fee managed application that runs inside your own subscription.
+  </div>
+  <p>
+    JIT RBAC is a flat-fee alternative to buying P2 tenant-wide just for time-boxed elevation. An admin
+    requests a role at a chosen scope in Microsoft Teams, an approver taps Approve (the links are
+    signed), the role is granted, and it is removed automatically when the time box expires. It runs
+    entirely in your own subscription with no vendor backend.
+  </p>
+  <div class="callout">
+    <strong>Honest scope:</strong> JIT RBAC does just-in-time elevation for <strong>Azure resource
+    (RBAC) roles granted to people</strong>. It does not cover Entra directory roles or
+    service-principal PIM. If you need JIT for directory roles, that is still PIM's territory.
+  </div>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>PIM:</strong> full JIT, requires Entra ID P2 per user.</li>
+    <li><strong>The common need:</strong> time-boxed elevation on Azure resource roles for a few
+      admins.</li>
+    <li><strong>DIY:</strong> request, approve, grant, and a scheduled revoke.</li>
+    <li><strong>Removes access only:</strong> the assignment is created and later deleted; no accounts
+      are changed.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/set-an-entra-id-account-to-expire`}>how to set a Microsoft Entra ID account to expire</a>.
+  </p>
+</BlogPost>
