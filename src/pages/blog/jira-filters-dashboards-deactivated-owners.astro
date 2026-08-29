@@ -1,0 +1,102 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.atlassian.com/apps/2038592087/orphaned-owner-cleanup';
+---
+<BlogPost
+  title="Find Jira filters, dashboards, and issues owned by deactivated users"
+  description="Deactivating a Jira Cloud user does not clean up their saved filters, dashboards, issues, or project leads. Here is how to inventory everything a departed user left behind."
+  tag="Jira administration"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    Deactivate a user in Jira Cloud and nothing gets cleaned up. Their saved filters keep running
+    (and nobody else can edit them), their dashboards keep rendering on wallboards, their issues stay
+    assigned to a dead account, and their projects still list them as lead. Jira has no view that
+    answers the question every admin asks after an offboarding: what did this person leave behind?
+    Deactivated-user reassignment is one of the longest-running admin asks on the Jira issue tracker
+    and Atlassian Community, and offboarding reviews, license reclamation, and access attestations
+    all stall on it.
+  </p>
+
+  <h2>Why Jira cannot tell you this out of the box</h2>
+  <ul>
+    <li><strong>Deactivation changes nothing on the artifacts.</strong> Filters, dashboards, issue
+      assignments, and project leads keep pointing at the deactivated account exactly as before.
+      There is no reassignment step and no prompt.</li>
+    <li><strong>There is no reverse lookup.</strong> User management shows you that an account is
+      deactivated, but nothing shows you what that account still owns across the site.</li>
+    <li><strong>The data is scattered across separate APIs.</strong> Filter ownership, dashboard
+      ownership, issue assignees and reporters, and project leads each live behind a different REST
+      endpoint, and nothing in the product joins them against the list of deactivated accounts.</li>
+  </ul>
+
+  <h2>The DIY approach: cross-reference the REST API</h2>
+  <p>
+    Everything you need is reachable through the Jira Cloud REST API. The recipe is to build the
+    list of deactivated accounts first, then sweep each artifact type against it:
+  </p>
+  <ul>
+    <li><strong>Enumerate deactivated users.</strong> Page through
+      <code>GET /rest/api/3/users/search</code> and keep accounts with
+      <code>accountType: atlassian</code> and <code>active: false</code>, so app, bot, and
+      portal-only customer accounts are never flagged.</li>
+    <li><strong>Sweep saved filters.</strong> Page through
+      <code>GET /rest/api/3/filter/search?expand=owner&amp;overrideSharePermissions=true</code> and
+      match each owner against the deactivated list. The override parameter pulls in private
+      filters; some sites reject it for an app identity, in which case you fall back to standard
+      visibility.</li>
+    <li><strong>Sweep dashboards.</strong> Same idea with
+      <code>GET /rest/api/3/dashboard/search?expand=owner</code>.</li>
+    <li><strong>Sweep issues.</strong> Use <code>POST /rest/api/3/search/jql</code> with
+      <code>assignee in (...)</code> and <code>reporter in (...)</code> clauses, batching the
+      account ids so each query stays under the JQL length limit.</li>
+    <li><strong>Sweep project leads.</strong> Page through
+      <code>GET /rest/api/3/project/search?expand=lead</code> and flag projects whose lead is
+      deactivated.</li>
+    <li>Group the hits by departed owner, export to CSV, and hand each ex-employee's pile to
+      whoever inherits it.</li>
+  </ul>
+  <p>
+    The catch is that this is a real script, not a one-liner: five paginated endpoints, JQL batching
+    under length caps, and a result that goes stale the next time someone leaves, so it has to run
+    on a schedule to stay useful.
+  </p>
+
+  <h2>A ready-made option: Orphaned-Owner Cleanup</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Orphaned-Owner Cleanup</a>
+    on the Atlassian Marketplace. It is a Forge app that runs entirely on Atlassian's infrastructure
+    (Runs on Atlassian), so nothing leaves your site.
+  </div>
+  <p>
+    Orphaned-Owner Cleanup is that recipe packaged. It scans the whole site daily and on demand,
+    flags every saved filter, dashboard, issue (by assignee and by reporter), and project lead still
+    pointing at a deactivated account, and groups the results by artifact type and by departed
+    owner, largest offender first, so offboarding cleanup becomes a checklist per person. One click
+    exports the full queue as audit-ready CSV, one row per artifact with its type, id, name, project
+    context, and the deactivated account it still points at. The scan and export are read-only; an
+    opt-in bulk-reassign action lets an admin pick an active successor, preview every change (a dry
+    run is the default and writes nothing), then explicitly apply it to issue assignees and
+    saved-filter owners. Dashboards and issue reporters stay manual: the app reports them but never
+    auto-changes them.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native "what does this deactivated user still own?" view:</strong> none in Jira
+      Cloud.</li>
+    <li><strong>Deactivation side effects:</strong> filters, dashboards, issues, and project leads
+      all keep pointing at the dead account.</li>
+    <li><strong>DIY fix:</strong> cross-reference five REST endpoints against the deactivated-user
+      list, on a schedule.</li>
+    <li><strong>Least privilege:</strong> the sweep is read-only (user read plus work read); writes
+      should be opt-in, previewed, and limited to what an admin confirms.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/set-an-entra-id-account-to-expire`}>set an Entra ID account to expire on a departure date</a>.
+  </p>
+</BlogPost>

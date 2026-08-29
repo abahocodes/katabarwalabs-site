@@ -15,11 +15,26 @@ const paths = [
   '/blog/find-and-delete-orphaned-azure-resources',
   '/blog/who-created-an-azure-resource-createdby-tag',
   '/blog/just-in-time-azure-role-elevation-without-pim',
+  '/blog/azure-anomaly-detector-retirement-cost-spikes',
+  '/blog/entra-app-registration-secret-expiry-alerts',
+  '/blog/azure-tls-certificate-expiry-alerts',
+  '/blog/key-vault-expiring-secrets-digest',
+  '/blog/find-dangling-dns-records-azure',
+  '/blog/clean-up-stale-azure-rbac-assignments',
+  '/blog/detect-azure-custom-role-definition-changes',
+  '/blog/azure-storage-account-hygiene',
+  '/blog/azure-policy-exemptions-tracking',
+  '/blog/find-azure-resources-with-no-alerts',
+  '/blog/find-azure-vms-without-backup',
+  '/blog/keep-atlassian-audit-logs-beyond-retention',
+  '/blog/jira-filters-dashboards-deactivated-owners',
+  '/blog/confluence-attachment-cleanup-storage',
+  '/blog/audit-jsm-portal-customer-access',
   '/support',
   '/privacy',
 ];
 
-const lastmod = '2026-08-26';
+const lastmod = '2026-08-29';
 
 const urls = paths
   .map((p) => {

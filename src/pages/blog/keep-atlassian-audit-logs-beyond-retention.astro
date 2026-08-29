@@ -1,0 +1,92 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.atlassian.com/apps/4152437534/compliance-log-vault';
+---
+<BlogPost
+  title="How to keep Jira audit logs past the retention window (SOC 2 / ISO evidence)"
+  description="Jira Cloud's audit log ages out after about 180 days, right when auditors ask for a year of history. Here is how to retain audit records long-term, in your own tenant."
+  tag="Atlassian compliance"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    A SOC 2 or ISO audit lands, or an incident review kicks off, and the first request is always the
+    same: show us the audit trail. Auditors routinely ask for a year or more of history. Jira Cloud's
+    audit log, though, is capped: older records age out after roughly 180 days, and once they are
+    gone they are gone. By the time an incident review starts, the records that matter have often
+    already aged out. Longer audit-log retention is a recurring, long-open request on the Jira issue
+    tracker, with roughly 350 combined votes across related asks.
+  </p>
+
+  <h2>Why Jira Cloud cannot do this out of the box</h2>
+  <ul>
+    <li><strong>The audit log is capped.</strong> Jira surfaces recent audit records, but older
+      records age out (around 180 days) and are permanently gone. There is no built-in long-term
+      archive.</li>
+    <li><strong>The gap only shows up when it hurts.</strong> Everything looks fine day to day, then
+      an access review or a SOC 2 / ISO audit asks for twelve months of evidence the platform no
+      longer has.</li>
+    <li><strong>You cannot backfill.</strong> The records live only in the audit log. Once the
+      retention window rolls past an event, no export, admin setting, or support ticket brings it
+      back.</li>
+  </ul>
+
+  <h2>The DIY approach: sync the audit log into your own store before it ages out</h2>
+  <p>
+    The durable fix is to copy audit records out of the rolling window and into storage you control,
+    while they are still available:
+  </p>
+  <ul>
+    <li>Run a <strong>scheduled job</strong> that reads the Jira auditing REST API
+      (<code>GET /rest/api/3/auditing/record</code>, paginated) on a regular cadence.</li>
+    <li>Keep a <strong>cursor</strong> (the timestamp or id of the last record you stored) so each
+      run only pulls new records since the previous one.</li>
+    <li><strong>Dedupe by record id</strong> when appending, so overlapping runs never double-store
+      an event.</li>
+    <li>When compliance asks, flatten the store to <strong>CSV</strong>: one row per record with the
+      id, timestamp, author, summary, category, object item, and changed values.</li>
+    <li>In Jira, find the native log under <strong>Settings &rarr; System &rarr; Audit log</strong>
+      to spot-check that your sync is keeping up.</li>
+  </ul>
+  <p>
+    The catch is discipline: the job has to run reliably every day, forever. Miss a stretch longer
+    than the retention window and that slice of your evidence trail is unrecoverable. You also have
+    to host the store and the scheduler somewhere, which usually means standing up infrastructure
+    outside Jira and getting that past your own security review.
+  </p>
+
+  <h2>A ready-made option: Compliance Log Vault</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Compliance Log Vault</a>
+    on the Atlassian Marketplace. It is a Forge app, eligible for the Runs on Atlassian badge: all
+    computation and storage run on Atlassian's own platform inside your Jira Cloud tenant, so nothing
+    leaves your instance.
+  </div>
+  <p>
+    Compliance Log Vault is that pattern packaged. A daily scheduled sync pulls new audit records and
+    appends them incrementally into an in-tenant vault, deduping by id so nothing is ever stored
+    twice. The vault only grows, so your evidence trail keeps building safely past the platform cap.
+    An admin page lets you browse retained records newest-first, see retention stats (counts by day
+    and by category, plus the full retained span), and export the entire vault as audit-ready CSV in
+    one click. It is read-only and least-privilege: just audit-log read and user read scopes, and it
+    changes nothing in Jira.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native retention:</strong> Jira Cloud audit records age out after about 180 days,
+      with no built-in archive.</li>
+    <li><strong>What auditors ask for:</strong> typically a year or more of history for SOC 2 / ISO
+      evidence and incident reviews.</li>
+    <li><strong>Durable fix:</strong> a scheduled incremental sync into your own store, deduped by
+      record id, exported as CSV on demand.</li>
+    <li><strong>Least privilege:</strong> the whole pattern needs only read access to the audit log
+      and user directory; nothing in Jira is modified.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/who-created-an-azure-resource-createdby-tag`}>Azure has the same problem with its Activity Log: how to capture who created a resource before the log ages out</a>.
+  </p>
+</BlogPost>

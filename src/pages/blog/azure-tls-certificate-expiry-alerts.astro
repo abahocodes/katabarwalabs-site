@@ -1,0 +1,100 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.cert-sentinel';
+---
+<BlogPost
+  title="Get alerted before TLS certificates expire on Azure App Gateway and App Service"
+  description="Azure has no native near-expiry alerting for TLS certificates uploaded to Application Gateway listeners, App Service, or API Management. Here is how to sweep them yourself, and a ready-made daily digest."
+  tag="Azure operations"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    An expired TLS certificate takes production down hard: browsers throw full-page warnings, API
+    clients refuse to connect, and the fix usually happens under pressure at the worst possible time.
+    The frustrating part is that the expiry date was sitting in the certificate all along. Yet if that
+    certificate was uploaded to an Application Gateway listener, an App Service, or an API Management
+    instance, nothing in Azure was going to warn you before the date arrived.
+  </p>
+
+  <h2>Why Azure cannot alert you out of the box</h2>
+  <ul>
+    <li><strong>Application Gateway listener certificates (bring-your-own) have no native expiry
+      alerting.</strong> The certs you upload to <code>sslCertificates</code> on an App Gateway just
+      sit there until they lapse. The same goes for the <code>trustedRootCertificates</code> used for
+      backend (end-to-end) TLS.</li>
+    <li><strong>App Service and API Management uploaded certificates expose an expiration date, but
+      nothing watches it.</strong> <code>Microsoft.Web/certificates</code> and per-APIM certificates
+      both carry an <code>expirationDate</code> property; it is up to you to read it and act.</li>
+    <li><strong>The places Azure does alert are not the places most outages come from.</strong> Key
+      Vault emits near-expiry Event Grid events for certificates stored there, and Front Door / CDN
+      managed certificates are auto-rotated by Azure. The uncovered stores are exactly the ones where
+      someone uploaded a cert by hand and moved on.</li>
+    <li><strong>The App Gateway data is awkward to read even when you go looking.</strong> The ARM
+      GET returns the public cert data as base64, and despite the documentation describing it as
+      public cert data corresponding to a pfx, it is actually a PKCS7 (P7B) bundle containing the
+      leaf plus its chain, not a bare X.509 certificate. Naive decoding fails.</li>
+  </ul>
+
+  <h2>The DIY approach: sweep the certificate stores on a schedule</h2>
+  <p>
+    The pattern is a scheduled job (a Function on a timer works well) with a <strong>Reader</strong>
+    role at subscription scope, sweeping every store that has no native alerting:
+  </p>
+  <ul>
+    <li><strong>Enumerate App Gateways</strong> (Resource Graph makes this fast) and read each one's
+      <code>properties.sslCertificates[]</code> and <code>properties.trustedRootCertificates[]</code>.
+      Decode the base64 blobs as PKCS7 first, select the leaf (end-entity) certificate from the
+      bundle, and read its <code>notAfter</code>. Fall back to parsing a single DER/PEM certificate
+      for the blobs that are not bundles.</li>
+    <li><strong>List App Service certificates</strong> (<code>Microsoft.Web/certificates</code>) and
+      per-instance API Management certificates, which already expose <code>expirationDate</code>
+      directly, so no decoding is needed.</li>
+    <li><strong>Classify each certificate</strong> against your warning thresholds (for example 30,
+      14, 7, and 1 days) into expired, expiring, or could not read expiry. That last bucket matters:
+      a cert blob that fails to decode is itself a signal worth surfacing.</li>
+    <li><strong>Post a digest to Teams</strong> (or wherever your on-call lives) and keep reporting
+      an expiring certificate every day until it is renewed, so the alert escalates instead of firing
+      once and getting lost.</li>
+  </ul>
+  <p>
+    Two details keep this least-privilege: read only certificate metadata and public certificate data
+    through the ARM management plane (private keys never need to be touched), and grant nothing
+    beyond Reader.
+  </p>
+
+  <h2>A ready-made option: Cert Sentinel</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Cert Sentinel</a>
+    on the Azure Marketplace. It runs as a managed application inside your own subscription, so nothing
+    leaves your tenant.
+  </div>
+  <p>
+    Cert Sentinel is that pattern packaged. Every day at 08:00 UTC it sweeps every in-scope
+    certificate in the subscription (App Gateway listener and backend trust certs, App Service
+    uploaded certs, and API Management certs) and posts one digest to your Teams channel listing
+    everything expired, expiring within your thresholds, or unreadable. Expiring certs are re-reported
+    daily until renewed. It needs only the Reader role, reads metadata and public certificate data
+    only (never private keys), and deliberately leaves Key Vault and Front Door / CDN managed certs
+    alone because Azure already covers those.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native expiry alerting:</strong> none for certs uploaded to App Gateway listeners,
+      App Gateway backend trust roots, App Service, or API Management.</li>
+    <li><strong>Where Azure does cover you:</strong> Key Vault (near-expiry Event Grid events) and
+      Front Door / CDN managed certificates (auto-rotated).</li>
+    <li><strong>App Gateway gotcha:</strong> <code>publicCertData</code> is a PKCS7 (P7B) bundle,
+      not a bare X.509 cert; parse the bundle and take the leaf.</li>
+    <li><strong>Least privilege:</strong> a subscription-scope Reader role is enough; private keys
+      are never read.</li>
+    <li><strong>Escalation beats one-shot alerts:</strong> report expiring certs daily until renewed.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/set-an-entra-id-account-to-expire`}>set an Entra ID account to expire automatically</a>.
+  </p>
+</BlogPost>

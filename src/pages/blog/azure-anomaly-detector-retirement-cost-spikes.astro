@@ -1,0 +1,113 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.cost-spike-sentinel';
+---
+<BlogPost
+  title="Azure Anomaly Detector is retiring. How to keep per-team cost-spike alerts."
+  description="Azure Anomaly Detector retires October 1, 2026. If you used it to catch cost spikes, here is a native, per-resource-group and per-team way to keep those alerts after it is gone."
+  tag="Azure cost management"
+  pubDate="August 27, 2026"
+  readMins={6}
+>
+  <p>
+    If you built anything on <strong>Azure AI Anomaly Detector</strong> (or Metrics Advisor), the clock
+    is running. Microsoft's own
+    <a class="text-brand" href="https://learn.microsoft.com/en-us/lifecycle/products/azure-anomaly-detector" target="_blank" rel="noopener">Anomaly Detector lifecycle page</a>
+    sets the date: new resource creation was disabled back in September 2023, and the service is fully
+    retired on <strong>October 1, 2026</strong>. After that, the API endpoints, models, and
+    configurations are gone.
+  </p>
+  <p>
+    Microsoft points general time-series workloads toward Microsoft Fabric, Azure Data Explorer, and
+    Stream Analytics. Fair enough for telemetry. But a lot of teams used Anomaly Detector for something
+    narrower and more boring: watching Azure spend and catching a cost spike before it became a
+    month-end surprise. For that, standing up Fabric or a KQL pipeline is a lot of machinery for one
+    question: <em>did any team's daily cost just jump?</em>
+  </p>
+  <p>
+    This is about that specific case: keeping <strong>per-team, per-resource-group cost-spike
+    alerts</strong> once Anomaly Detector is gone.
+  </p>
+
+  <h2>The hole: native cost anomaly detection is subscription-scope only</h2>
+  <p>
+    Azure Cost Management does ship built-in anomaly detection, but read Microsoft's own documentation
+    carefully. The page
+    <a class="text-brand" href="https://learn.microsoft.com/en-us/azure/cost-management-billing/understand/analyze-unexpected-charges" target="_blank" rel="noopener">Identify anomalies and unexpected changes in cost</a>
+    states plainly that <strong>"anomaly detection is only available for subscriptions."</strong> That
+    single line is the gap:
+  </p>
+  <ul>
+    <li><strong>Subscription scope only.</strong> A spike inside one team's resource group gets
+      averaged into the subscription total. A team that quietly doubles its spend can be invisible in
+      the subscription number.</li>
+    <li><strong>The rules are capped.</strong> Native anomaly alert rules are limited per subscription,
+      so you cannot give every team, environment, or cost center its own detector and its own
+      recipient.</li>
+    <li><strong>The signal routes to the wrong person.</strong> Whoever can fix a runaway deployment is
+      the team that owns the resource group, not whoever reads the subscription-level alert.</li>
+  </ul>
+
+  <h2>The do-it-yourself method</h2>
+  <p>
+    You can build this against the Cost Management query API. The building blocks:
+  </p>
+  <ul>
+    <li><strong>Pull daily actual cost per slice.</strong> Query
+      <code>Microsoft.CostManagement/query</code> with <code>granularity: Daily</code> and a grouping
+      on resource group or a tag key such as <code>Team</code>, <code>CostCenter</code>, or
+      <code>Environment</code>. Follow <code>nextLink</code> paging or you will silently truncate large
+      tenants.</li>
+    <li><strong>Handle cost-data latency, or drown in false positives.</strong> Cost Management actuals
+      for the most recent one to three days are incomplete and get restated as usage is ingested. If
+      you judge yesterday against a full baseline, the newest day reads artificially low and then
+      spikes every morning as it settles. Drop the most recent two days from both the judged day and
+      the baseline, and judge the day at (today minus 2).</li>
+    <li><strong>Compute a trailing baseline per slice.</strong> Take the mean and standard deviation
+      over the last N days, then the judged day's z-score. Flag an anomaly when the z-score crosses a
+      threshold (3 is a sane default) and the absolute dollar increase is large enough to matter (a
+      floor around ten dollars kills noise on tiny slices).</li>
+    <li><strong>Handle short history.</strong> New slices lack enough trailing days for a trustworthy
+      z-score. Fall back to a percent-jump rule (latest at least fifty percent over baseline), and do
+      not alert brand-new slices with under three days of data.</li>
+    <li><strong>Rank and route.</strong> Sort anomalies by dollar delta and post to the owning team's
+      Teams channel with slice name, latest cost, baseline, delta, and z-score.</li>
+  </ul>
+  <p>
+    That works. It is also a real project: pagination, the latency trap, per-slice statistics, a
+    scheduler, and a Teams webhook, plus the ongoing job of keeping it running.
+  </p>
+
+  <h2>A ready-made option: Cost Spike Sentinel</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Cost Spike Sentinel</a>
+    on the Azure Marketplace. It is a managed application that deploys into your own subscription, so
+    nothing leaves your tenant and there is no vendor backend.
+  </div>
+  <p>
+    If you would rather not build and maintain the detector above, Cost Spike Sentinel is that pattern
+    packaged. Every day it queries Cost Management for daily cost per resource group or per tag
+    (<code>Team</code>, <code>CostCenter</code>, <code>Environment</code>), computes a trailing z-score
+    baseline per slice, handles the latency trim, falls back to a percent-jump rule for short history,
+    and alerts the owning team in Teams the moment a slice spikes. Two honest caveats: it is
+    <strong>alert-only</strong> (no write permission at all, it never caps, stops, or deletes
+    anything), and it <strong>replaces the cost use case, not all of Anomaly Detector</strong> (for
+    general time-series, look at Fabric or Data Explorer).
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Anomaly Detector retirement:</strong> October 1, 2026. New resources already disabled.</li>
+    <li><strong>Native cost anomaly detection:</strong> stays, but subscription-scope, rule-capped, and
+      routes to the subscription owner, not the team.</li>
+    <li><strong>The gap:</strong> per-slice, day-granularity cost-spike alerts to the team that owns the
+      slice.</li>
+    <li><strong>Options:</strong> the DIY detector above, or a packaged alert-only one.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/azure-spending-limit-hard-cap`}>how to put a hard spending cap on Azure</a>.
+  </p>
+</BlogPost>

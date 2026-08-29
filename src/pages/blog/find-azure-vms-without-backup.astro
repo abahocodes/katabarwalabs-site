@@ -1,0 +1,98 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.backup-auditor';
+---
+<BlogPost
+  title="How to find Azure VMs and file shares with no backup coverage"
+  description="Azure has no native alert for a resource that was never enrolled in any backup policy. Here is how to find VMs and file shares with zero backup coverage before an auditor or an outage does."
+  tag="Azure operations"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    Backup failures page someone. Backup <em>absence</em> pages no one. The VM that a teammate spun
+    up six months ago and never enrolled in Azure Backup produces no failed jobs, no alerts, and no
+    red icons anywhere, right up until you need to restore it or an auditor asks the question every
+    audit eventually reaches: "show me proof everything is backed up." Azure has no native alert for
+    "this VM or file share is not in any backup policy," so coverage silently drifts as new
+    resources are created.
+  </p>
+
+  <h2>Why Azure cannot tell you this out of the box</h2>
+  <ul>
+    <li><strong>Azure Backup alerting is scoped to protected items.</strong> Alerts fire on failed
+      backup jobs, restore problems, and deletions, all events on resources that are already in a
+      vault. A resource in no policy generates no jobs, so it generates no alerts.</li>
+    <li><strong>Vaults report inward, not outward.</strong> Each Recovery Services vault can list
+      what it protects. Nothing computes the complement: everything in the subscription that no
+      vault protects. That answer requires joining the full resource inventory against every vault,
+      and no built-in view does that continuously and tells you about it.</li>
+    <li><strong>Coverage drifts by default.</strong> Enrollment happens per resource. Unless every
+      creation path (portal clicks, pipelines, one-off scripts) reliably enrolls what it creates,
+      the gap between "exists" and "protected" grows quietly, and there is no daily report saying
+      how wide it has become.</li>
+  </ul>
+
+  <h2>The DIY approach: cross-reference inventory against vaults</h2>
+  <p>
+    The fix is a scheduled anti-join: list everything backupable, list everything protected, and
+    report the difference somewhere people actually look.
+  </p>
+  <ul>
+    <li><strong>Inventory backupable resources</strong> with Azure Resource Graph: virtual machines
+      and Azure Files shares (via their storage accounts).</li>
+    <li><strong>List protected items</strong> across every Recovery Services vault in the
+      subscription. Resource Graph exposes these in the <code>RecoveryServicesResources</code>
+      table, so both sides of the join can come from one API.</li>
+    <li><strong>Anti-join and classify.</strong> Anything in the inventory with no matching
+      protected item is <strong>unprotected</strong>. While you are there, check the protected side
+      too: an item whose last backup is unhealthy is <strong>failing</strong>, and one whose newest
+      recovery point is older than your threshold is <strong>stale</strong>. All three are coverage
+      gaps; only the first is invisible to native alerting.</li>
+    <li><strong>Run it on a schedule</strong> (a timer-triggered Function or an Automation runbook)
+      and post the gaps to a Teams channel, because a report nobody reads protects nothing.</li>
+  </ul>
+  <p>
+    Three details will bite you if you skip them. Resource Graph paginates, so follow the results
+    to the end or large subscriptions silently truncate. Azure Files protection is registered
+    against the parent <strong>storage account</strong>, so match shares to their account rather
+    than looking for the share itself. And Azure SQL databases are covered by built-in
+    point-in-time restore rather than Recovery Services vaults, so do not flag them as unprotected
+    just because no vault claims them.
+  </p>
+
+  <h2>A ready-made option: Backup Auditor</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Backup Auditor</a>
+    on the Azure Marketplace. It runs as a managed application inside your own subscription, so
+    nothing leaves your tenant.
+  </div>
+  <p>
+    Backup Auditor is that pattern packaged. Every day at 07:00 UTC it inventories backupable
+    resources through Azure Resource Graph, reads protected items across all Recovery Services
+    vaults in the subscription, classifies each resource as unprotected, failing, or stale, and
+    posts a coverage percentage plus the itemised gaps to your Teams channel as an Adaptive Card.
+    That daily report is the compliance artifact auditors ask for. It is read-only, running with
+    Reader and Backup Reader roles only, so it never changes backup configuration.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native alert for "not in any backup policy":</strong> none. Azure Backup alerts
+      cover protected items, not never-enrolled resources.</li>
+    <li><strong>Durable fix:</strong> a scheduled anti-join of the resource inventory against every
+      vault's protected items, delivered to a channel people read.</li>
+    <li><strong>Three gap types:</strong> unprotected (in no policy), failing (last backup not
+      healthy), stale (newest recovery point too old).</li>
+    <li><strong>Edge cases:</strong> Azure Files protection lives on the storage account; Azure SQL
+      uses built-in point-in-time restore, not vaults.</li>
+    <li><strong>Least privilege:</strong> the whole check needs Reader plus Backup Reader, both
+      read-only.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/find-and-delete-orphaned-azure-resources`}>find orphaned Azure resources still costing you money</a>.
+  </p>
+</BlogPost>

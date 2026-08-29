@@ -1,0 +1,102 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.alert-blindspot';
+---
+<BlogPost
+  title="How to find Azure resources with no alert coverage"
+  description="Azure has no native view of which resources have zero alert rules pointed at them. Here is how to build a coverage report with Azure Resource Graph, and the traps in counting multi-resource and log alerts."
+  tag="Azure monitoring"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    The resources you only discover are unmonitored during an outage are the ones nobody set an
+    alert rule on. A production SQL database or Key Vault can sit for months with zero metric or
+    log alerts pointed at it, and nothing in the portal flags that. Azure Monitor will happily show
+    you every alert rule you have; it has no view that answers the opposite question: "which of my
+    production resources have <em>no</em> alerts at all?"
+  </p>
+
+  <h2>Why Azure cannot tell you this out of the box</h2>
+  <ul>
+    <li><strong>The Alerts experience is rule-centric, not resource-centric.</strong> It lists the
+      alert rules that exist and the alerts that fired. A resource with nothing watching it simply
+      never appears, which is exactly the failure mode you are trying to catch.</li>
+    <li><strong>The mapping lives on the rule, not the resource.</strong> An alert rule stores the
+      resources it evaluates in its own <code>properties.scopes[]</code>. The resource has no
+      back-reference to the alerts that watch it, so there is no per-resource "coverage" property to
+      filter or sort on.</li>
+    <li><strong>Broad scopes do not mean broad coverage.</strong> A metric alert scoped at a
+      resource group or subscription is restricted to a single resource type
+      (<code>targetResourceType</code>) and a single region (<code>targetResourceRegion</code>).
+      A log alert scoped to a Log Analytics workspace watches whatever its KQL query says, which
+      may be one resource or none of yours. Eyeballing scopes gives false confidence.</li>
+  </ul>
+
+  <h2>The DIY approach: two Resource Graph queries and a diff</h2>
+  <p>
+    All the data you need is queryable with <strong>Azure Resource Graph</strong> and nothing more
+    than Reader access. The shape of the job:
+  </p>
+  <ul>
+    <li><strong>Query 1, the inventory.</strong> Pull every resource of a type worth alerting on:
+      SQL databases, storage accounts, App Service sites, Cosmos DB accounts, Key Vaults, Redis
+      caches, Service Bus namespaces, Application Gateways, Front Door / CDN profiles, virtual
+      machines. Project id, type, and region.</li>
+    <li><strong>Query 2, the alert scopes.</strong> Pull every metric alert
+      (<code>microsoft.insights/metricalerts</code>) and log / scheduled-query alert
+      (<code>microsoft.insights/scheduledqueryrules</code>), expand
+      <code>properties.scopes[]</code>, and keep the target type and region fields.</li>
+    <li><strong>Diff them, carefully.</strong> A metric alert scoped to a specific resource id
+      covers that one resource. A multi-resource metric alert covers only the resources under its
+      scope whose type <em>and</em> region match the rule. Credit a log alert only when it is
+      scoped directly to the resource id; a workspace- or subscription-scoped log alert has
+      indeterminate coverage. Do not count activity-log alerts as metric or health coverage at
+      all: they are a different alert type.</li>
+    <li><strong>Run it on a schedule</strong> (a Function on a weekly timer is plenty) and post the
+      uncovered list somewhere people look, such as a Teams channel. In the portal you can spot
+      check any resource via <strong>Monitoring &rarr; Alerts &rarr; Alert rules</strong>, but only
+      one resource at a time, which is why the sweep needs to be a job.</li>
+  </ul>
+  <p>
+    The one rule that keeps the report honest: when in doubt, count the resource as
+    <strong>uncovered</strong>. A report that wrongly says "covered" is worse than no report,
+    because it tells you a resource is monitored when it is not, and that is the dangerous
+    direction.
+  </p>
+
+  <h2>A ready-made option: Alert Blindspot</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Alert Blindspot</a>
+    on the Azure Marketplace. It runs as a managed application inside your own subscription, so
+    nothing leaves your tenant.
+  </div>
+  <p>
+    Alert Blindspot is that pattern packaged. Every Monday it runs the two Resource Graph queries
+    under a system-assigned managed identity with Reader access only, applies the conservative
+    coverage rules above (including the multi-resource type-and-region restriction and the
+    indeterminate broad log alerts, which it surfaces as an informational note), and posts an
+    Adaptive Card to a Teams webhook you configure: an overall coverage percentage plus a per-type
+    breakdown, worst coverage first, naming exactly which resources are blind. It is report-only
+    and never modifies anything, and the built-in resource-type list can be overridden per tenant.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native "resources with no alerts" view:</strong> none. Azure Monitor lists rules,
+      not the resources no rule watches.</li>
+    <li><strong>Data source:</strong> Azure Resource Graph has both halves, the resource inventory
+      and every alert rule's <code>properties.scopes[]</code>, readable with Reader only.</li>
+    <li><strong>Coverage traps:</strong> multi-resource metric alerts are limited to one type and
+      one region; broad log alerts depend on their KQL; activity-log alerts are not metric
+      coverage.</li>
+    <li><strong>Honest default:</strong> err toward uncovered. A false "covered" hides the exact
+      gap you built the report to find.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/find-and-delete-orphaned-azure-resources`}>find orphaned Azure resources still costing you money</a>.
+  </p>
+</BlogPost>

@@ -1,0 +1,99 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.policy-exemptions';
+---
+<BlogPost
+  title="Keep Azure Policy exemptions from living forever (or expiring silently)"
+  description="Azure Policy exemptions expire without any notification, and exemptions with no expiry quietly become permanent. Here is how to inventory and track exemption lifecycles across a subscription."
+  tag="Azure governance"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    An Azure Policy exemption is usually born as a favor: a team needs to ship, a policy blocks
+    them, and someone grants a waiver "just for now." Then two things go wrong in opposite
+    directions. Exemptions created with an expiry date lapse silently, and the moment they do, the
+    policy starts enforcing again, which can break deployments that relied on the waiver.
+    Exemptions created with <em>no</em> expiry never lapse at all and quietly become permanent
+    holes in the very guardrails the policy was supposed to provide. Either way, nobody gets told.
+  </p>
+
+  <h2>Why Azure cannot tell you this out of the box</h2>
+  <ul>
+    <li><strong>There is no notification when an exemption expires.</strong> The
+      <code>expiresOn</code> date is honored (the exemption simply stops applying), but nothing
+      alerts the team that was depending on it. The first symptom is often a failed deployment or a
+      compliance state that changed overnight.</li>
+    <li><strong>There is no warning before expiry either.</strong> You cannot ask Azure to ping you
+      30, 14, or 7 days ahead so the exemption can be reviewed, renewed, or allowed to lapse on
+      purpose.</li>
+    <li><strong>Nothing tracks exemptions across a subscription.</strong> Exemptions can live at
+      management group, subscription, resource group, and resource scope, and the portal shows them
+      in the context of each assignment. There is no single recurring report answering "what
+      waivers exist right now, who do they cover, and which ones never expire?"</li>
+    <li><strong>No-expiry exemptions are invisible by design.</strong> An exemption without an
+      <code>expiresOn</code> is valid forever, so it never resurfaces on its own. The temporary
+      waiver from two reorgs ago is still switching a control off today.</li>
+  </ul>
+
+  <h2>The DIY approach: enumerate exemptions on a schedule and classify them</h2>
+  <p>
+    The fix is an inventory job, not a policy change. Exemptions are ordinary ARM resources
+    (<code>Microsoft.Authorization/policyExemptions</code>), so a scheduled job with nothing more
+    than <strong>Reader</strong> access can do the whole thing:
+  </p>
+  <ul>
+    <li>Run a <strong>scheduled job</strong> (a Function on a timer or an Automation runbook) that
+      lists every policy exemption visible at subscription scope, including the ones inherited from
+      management groups and the ones buried down at resource-group and resource scope.</li>
+    <li>For each exemption, read <code>expiresOn</code> and sort it into a bucket:
+      <strong>expired</strong> (the policy is enforcing again), <strong>expiring soon</strong>
+      (inside whatever warning window you choose), or <strong>no expiry set</strong> (a permanent
+      waiver that deserves a periodic look).</li>
+    <li>Post the result somewhere humans already are, for example a Teams channel: exemption name,
+      scope, category, days left. Expired and no-expiry items go at the top.</li>
+    <li>Repeat daily. The value is the cadence: an exemption that shows up in a report every
+      morning cannot expire silently or live forever unnoticed.</li>
+  </ul>
+  <p>
+    The catch is ownership: this is one more script to write, schedule, permission, and keep
+    running, and the day it quietly stops is the day an exemption quietly lapses.
+  </p>
+
+  <h2>A ready-made option: Policy Exemption Tracker</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Policy Exemption Tracker</a>
+    on the Azure Marketplace. It runs as a managed application inside your own subscription, so
+    nothing leaves your tenant.
+  </div>
+  <p>
+    Policy Exemption Tracker is that pattern packaged. Every day at 08:00 UTC it lists every Azure
+    Policy exemption and reports the lifecycle to your Teams channel as an Adaptive Card:
+    <strong>expired</strong> (the policy is now enforcing again, so recent deployments may fail),
+    <strong>expiring soon</strong> (within thresholds you set, 30 / 14 / 7 / 1 days by default),
+    and <strong>no expiry set</strong> (permanent exemptions, which are latent security gaps). It
+    is read-only: the app runs under a system-assigned managed identity that needs only the
+    <strong>Reader</strong> role at subscription scope, and alerts go only to a Teams webhook you
+    configure.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Expiry behavior:</strong> when an exemption's <code>expiresOn</code> passes, the
+      policy starts enforcing again, with no notification to anyone.</li>
+    <li><strong>No-expiry exemptions:</strong> valid forever; they never resurface for review on
+      their own.</li>
+    <li><strong>Native cross-scope inventory or expiry alerting:</strong> none; exemptions are
+      viewed per assignment and scope.</li>
+    <li><strong>Durable fix:</strong> a daily job that enumerates exemptions and buckets them into
+      expired / expiring soon / no expiry.</li>
+    <li><strong>Least privilege:</strong> the whole job is read-only and needs only Reader at
+      subscription scope.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/set-an-entra-id-account-to-expire`}>set an Entra ID account to expire (temporary access that actually ends)</a>.
+  </p>
+</BlogPost>

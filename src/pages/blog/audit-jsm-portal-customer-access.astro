@@ -1,0 +1,104 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.atlassian.com/apps/1250207589/portal-governance-for-jsm';
+---
+<BlogPost
+  title="How to audit who can access your Jira Service Management portals"
+  description="JSM has no single view of who can reach each service desk portal. Here is how to audit customers, organizations, and agent grants per desk, and how to keep that audit current."
+  tag="Jira Service Management"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    Ask a simple question of any Jira Service Management site that has been running for a year:
+    who can reach this portal, and how? There is no screen that answers it. External customers get
+    added desk by desk, organizations get granted and their memberships drift, agents land on the
+    Service Desk Team role directly or through groups nobody re-checks, and deactivated accounts
+    stay on that role long after the person left. Portal-access visibility is a long-running ask on
+    the JSM issue tracker (JSDCLOUD) and a recurring "who has access to our portal?" thread on
+    Atlassian Community, and it matters most exactly when an access review or customer-data audit
+    lands on your desk.
+  </p>
+
+  <h2>Why JSM cannot tell you this out of the box</h2>
+  <ul>
+    <li><strong>Access facts live in different places.</strong> Customer lists are per desk,
+      organization memberships live in a separate screen, and agent access hides inside project
+      roles and groups. No single view joins them.</li>
+    <li><strong>Group-granted agent access is invisible from the project.</strong> An agent on the
+      Service Desk Team role via a group inherits access whenever the group changes, and group
+      membership changes outside the project, where nobody auditing the desk is looking.</li>
+    <li><strong>Nothing is diffed over time.</strong> Even if you assemble the picture once, JSM
+      keeps no record of what changed since, so every review starts from zero.</li>
+    <li><strong>Stale grants accumulate silently.</strong> Deactivated accounts stay on customer
+      lists and roles, and organization grants can sit on a desk with zero members left in them.</li>
+  </ul>
+
+  <h2>The DIY approach: walk every desk through the REST API</h2>
+  <p>
+    Everything you need is in the JSM and Jira REST APIs, spread across several endpoints that you
+    have to join yourself, per desk:
+  </p>
+  <ul>
+    <li>Enumerate service desks with <code>GET /rest/servicedeskapi/servicedesk</code> (paged with
+      <code>start</code> and <code>limit</code>).</li>
+    <li>For each desk, list customers with direct portal access via
+      <code>GET .../servicedesk/&#123;id&#125;/customer</code> (an experimental endpoint, so it
+      needs the <code>X-ExperimentalApi: opt-in</code> header).</li>
+    <li>List the desk's organization grants via <code>GET .../servicedesk/&#123;id&#125;/organization</code>,
+      then roll up each organization's members via
+      <code>GET /rest/servicedeskapi/organization/&#123;id&#125;/user</code>. This is where the
+      zero-member org grants show up.</li>
+    <li>Read the project's roles via <code>GET /rest/api/3/project/&#123;key&#125;/role</code>,
+      follow the Service Desk Team role URL to its actors, and note whether each grant is a direct
+      user or a group.</li>
+    <li>Resolve every account's active flag via <code>GET /rest/api/3/user?accountId=</code> to
+      catch deactivated accounts still holding access.</li>
+  </ul>
+  <p>
+    The catches: the Service Desk Team role name is localized per project language, so an
+    English-only match silently loses agent data on non-English sites; the public API does not
+    expose a portal's open-signup setting, so "open to anyone with the link" cannot be detected
+    directly; and a one-off script gives you a snapshot, not a record. To see drift you have to
+    persist each run and diff it against the last, per desk, forever.
+  </p>
+
+  <h2>A ready-made option: Portal Governance for JSM</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Portal Governance for JSM</a>
+    on the Atlassian Marketplace. It is built on Atlassian Forge and runs entirely on Atlassian's
+    own platform inside your Jira Cloud tenant, so nothing leaves your instance.
+  </div>
+  <p>
+    Portal Governance for JSM is that pattern packaged. It scans every service desk daily and on
+    demand, builds the per-desk access matrix (customers, organization grants with membership
+    rollups, and agent grants classified direct vs group), flags exposure (deactivated agents,
+    group-granted access, empty organization grants, portals with zero request types), diffs each
+    scan against the previous one so you see exactly what changed, and exports the whole matrix as
+    audit-ready CSV. An opt-in cleanup can then remove deactivated accounts from customer lists and
+    organizations, always as a dry-run preview first, behind an explicit confirmation, with each
+    account re-verified as still deactivated immediately before removal. Cleanup removes portal
+    access only: it does not deactivate accounts and does not free license seats, and removal is
+    recoverable. Outside that opt-in cleanup, the app is read-only.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native "who can reach this portal" view:</strong> none in JSM; the facts are split
+      across customer lists, organization screens, and project roles.</li>
+    <li><strong>Agent access:</strong> lives on the Service Desk Team role, granted direct or via
+      groups whose membership changes outside the project.</li>
+    <li><strong>DIY route:</strong> join five REST endpoints per desk, resolve active flags, and
+      persist snapshots yourself to see drift.</li>
+    <li><strong>API gaps:</strong> the customer endpoint is experimental, and the portal
+      open-signup setting is not exposed via the public API.</li>
+    <li><strong>Durable fix:</strong> a daily scan that builds the access matrix, flags exposure,
+      diffs runs, and exports CSV evidence for access reviews.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/set-an-entra-id-account-to-expire`}>set an external identity to expire instead of letting it linger</a>.
+  </p>
+</BlogPost>

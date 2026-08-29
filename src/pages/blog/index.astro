@@ -5,6 +5,111 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 // Hand-maintained post list (newest first). Add an entry when you publish a post.
 const posts = [
   {
+    slug: 'entra-app-registration-secret-expiry-alerts',
+    title: 'Get alerted before Entra app registration secrets and certificates expire',
+    excerpt: 'Entra ID shows the expiry date of every app registration secret and certificate but never alerts anyone before one expires. Here is the DIY Graph scan and a packaged in-tenant option.',
+    tag: 'Microsoft Entra ID',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'azure-tls-certificate-expiry-alerts',
+    title: 'Get alerted before TLS certificates expire on Azure App Gateway and App Service',
+    excerpt: 'Azure has no native near-expiry alerting for TLS certificates on Application Gateway listeners, App Service, or API Management. Here is how to sweep them yourself, and a ready-made daily digest.',
+    tag: 'Azure operations',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'key-vault-expiring-secrets-digest',
+    title: 'Get one digest of every expiring Key Vault secret, key, and certificate',
+    excerpt: 'Key Vault expiry notifications are per vault, fire once, and ignore objects with no expiry date. Here is how to get a single daily digest across every vault in a subscription.',
+    tag: 'Azure security',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'find-dangling-dns-records-azure',
+    title: 'Find dangling DNS records in Azure before someone takes over your subdomain',
+    excerpt: 'A CNAME pointing at a deleted Azure resource is a subdomain takeover waiting to happen, and the official answer is a one-off PowerShell script. Here is how to scan for dangling records daily.',
+    tag: 'Azure security',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'clean-up-stale-azure-rbac-assignments',
+    title: 'Find and clean up stale Azure RBAC role assignments',
+    excerpt: 'Deleted identities leave orphaned Identity not found role assignments that clutter IAM and count against the hard 4,000-per-subscription limit. Here is how to find and remove them safely.',
+    tag: 'Azure security / IAM',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'detect-azure-custom-role-definition-changes',
+    title: 'How to detect when someone changes an Azure custom role definition',
+    excerpt: 'Azure fires no alert when a custom role definition quietly gains dangerous permissions. Here is how to detect owner-equivalent custom roles and permission creep.',
+    tag: 'Azure security / IAM',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'azure-storage-account-hygiene',
+    title: 'Find the Azure storage accounts putting your data at risk',
+    excerpt: 'Anonymous blob access, shared-key auth, weak TLS, open networks: Azure has no recurring report that grades every storage account. Here is how to build one with Resource Graph.',
+    tag: 'Azure security',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'azure-policy-exemptions-tracking',
+    title: 'Keep Azure Policy exemptions from living forever (or expiring silently)',
+    excerpt: 'Azure Policy exemptions expire without any notification, and exemptions with no expiry quietly become permanent gaps. Here is how to inventory and track exemption lifecycles.',
+    tag: 'Azure governance',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'find-azure-resources-with-no-alerts',
+    title: 'How to find Azure resources with no alert coverage',
+    excerpt: 'Azure Monitor lists the alert rules you have, but has no view of the resources no rule watches. Here is how to build a zero-alert coverage report with Resource Graph.',
+    tag: 'Azure monitoring',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'find-azure-vms-without-backup',
+    title: 'How to find Azure VMs and file shares with no backup coverage',
+    excerpt: 'Azure has no native alert for a resource that was never enrolled in any backup policy, so coverage silently drifts. Here is how to find unprotected, failing, and stale resources.',
+    tag: 'Azure operations',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'keep-atlassian-audit-logs-beyond-retention',
+    title: 'How to keep Jira audit logs past the retention window (SOC 2 / ISO evidence)',
+    excerpt: 'Jira Cloud audit logs age out after about 180 days, right when auditors ask for a year of history. Here is how to retain audit records long-term, in your own tenant.',
+    tag: 'Atlassian compliance',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'jira-filters-dashboards-deactivated-owners',
+    title: 'Find Jira filters, dashboards, and issues owned by deactivated users',
+    excerpt: 'Deactivating a Jira Cloud user does not clean up their saved filters, dashboards, issues, or project leads. Here is how to inventory everything a departed user left behind.',
+    tag: 'Jira administration',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'confluence-attachment-cleanup-storage',
+    title: 'Find what is eating your Confluence storage and clean it up safely',
+    excerpt: 'Confluence Cloud has no site-wide view of attachment storage waste, so unused, orphaned, and oversized files pile up against your quota. Here is how to build the inventory and clean up safely.',
+    tag: 'Confluence administration',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'audit-jsm-portal-customer-access',
+    title: 'How to audit who can access your Jira Service Management portals',
+    excerpt: 'JSM has no single view of who can reach each service desk portal: customers, organization grants, and agent access all live in different places. Here is the DIY audit and a Forge-native option.',
+    tag: 'Jira Service Management',
+    date: 'August 29, 2026',
+  },
+  {
+    slug: 'azure-anomaly-detector-retirement-cost-spikes',
+    title: 'Azure Anomaly Detector is retiring. How to keep per-team cost-spike alerts.',
+    excerpt: 'Azure Anomaly Detector retires October 1, 2026. If you used it to catch cost spikes, here is a native, per-resource-group and per-team way to keep those alerts after it is gone.',
+    tag: 'Azure cost management',
+    date: 'August 27, 2026',
+  },
+  {
     slug: 'azure-spending-limit-hard-cap',
     title: 'How to put a hard spending cap on Azure (and actually stop the bill)',
     excerpt: 'Azure has no native hard spending limit on pay-as-you-go. Here is what the platform does and does not do, the DIY options, and how to make compute actually stop at your cap.',
@@ -43,15 +148,15 @@ const posts = [
 ---
 <Base
   title="Blog — Katabarwa Labs"
-  description="Practical guides for Azure administrators on cost, identity lifecycle, secrets, and cleanup, from the team building in-tenant Azure tools."
+  description="Practical guides for Azure and Atlassian administrators on cost, identity lifecycle, secrets, audit logs, and cleanup, from the team building in-tenant tools."
 >
   <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
     <div class="wrap pt-[52px] pb-[46px]">
-      <p class="eyebrow">Guides for Azure admins</p>
+      <p class="eyebrow">Guides for Azure and Atlassian admins</p>
       <h1 class="mt-2 text-[clamp(26px,4vw,36px)] font-extrabold tracking-[-0.02em] text-white">Blog</h1>
       <p class="mt-2 max-w-[640px] text-[15px] text-[#a9bce6]">
-        Straight, practical answers to the Azure operations questions we kept seeing, from cost caps
-        to account expiry to orphaned-resource cleanup.
+        Straight, practical answers to the operations questions we kept seeing, from cost caps and
+        expiring secrets to audit-log retention and orphaned-resource cleanup.
       </p>
     </div>
   </section>

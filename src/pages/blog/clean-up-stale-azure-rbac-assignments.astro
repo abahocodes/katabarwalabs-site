@@ -1,0 +1,100 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.rbac-janitor';
+---
+<BlogPost
+  title="Find and clean up stale Azure RBAC role assignments"
+  description="Deleted identities leave orphaned 'Identity not found' role assignments that clutter IAM and count against the 4,000-per-subscription limit. Here is how to find and remove them."
+  tag="Azure security / IAM"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    Open the Access control (IAM) blade on any subscription that has been around for a few years and
+    you will find them: role assignments labeled <strong>"Identity not found"</strong>. Every time a
+    user, group, service principal, or managed identity is deleted, its role assignments are left
+    behind as orphans. Add the assignments still granted to departed employees, and the over-broad
+    grants nobody has reviewed since a long-finished project, and RBAC quietly becomes the least
+    tidy part of the tenant. The orphans are not just clutter: they count against the hard
+    <strong>4,000 role-assignments-per-subscription limit</strong>, which can silently block new
+    grants when you hit it.
+  </p>
+
+  <h2>Why Azure cannot clean this up for you</h2>
+  <ul>
+    <li><strong>Deleting an identity does not delete its role assignments.</strong> The assignment
+      stays behind, pointing at a principal ID that no longer resolves, which is exactly what the
+      portal renders as "Identity not found".</li>
+    <li><strong>There is no native bulk cleanup.</strong> The portal lets you remove orphaned
+      assignments one at a time, per scope. Nothing sweeps a whole subscription for you on a
+      schedule.</li>
+    <li><strong>The 4,000 limit is per subscription and it is hard.</strong> Orphaned assignments
+      count toward it just like live ones, and there is no built-in warning as you approach the
+      ceiling; the first symptom is often a failed role assignment in a deployment pipeline.</li>
+    <li><strong>Nothing tells you an assignment went stale.</strong> Azure does not notify anyone
+      when a principal behind an assignment disappears, so the orphans accumulate unseen until
+      someone happens to open the IAM blade.</li>
+  </ul>
+
+  <h2>The DIY approach: resolve every principal, then prune</h2>
+  <p>
+    The pattern the PowerShell blogs converge on is the same one you would build yourself:
+  </p>
+  <ul>
+    <li><strong>List every role assignment</strong> in the subscription. In PowerShell,
+      <code>Get-AzRoleAssignment</code> exposes orphans as entries whose <code>ObjectType</code> is
+      <code>Unknown</code>.</li>
+    <li><strong>Verify against the directory.</strong> For a reliable answer, resolve the principal
+      IDs through Microsoft Graph (for example <code>directoryObjects/getByIds</code>) and treat an
+      assignment as orphaned only when the directory positively confirms the principal is gone.</li>
+    <li><strong>Remove the confirmed orphans</strong> with <code>Remove-AzRoleAssignment</code>, and
+      while you are in there, review grants to departed users and roles that are broader than the
+      job requires.</li>
+    <li><strong>Schedule it.</strong> A one-off script cleans up today's mess; identities get
+      deleted every week, so the sweep needs to run on a timer to stay clean.</li>
+  </ul>
+  <p>
+    The dangerous part is the edge cases. If a Graph lookup fails mid-run (throttling, an outage, a
+    propagation delay), a naive script reads the missing answer as "principal gone" and deletes
+    live assignments. Assignments inherited from a management group, or belonging to
+    foreign-tenant principals under Azure Lighthouse, also need to be recognized and left alone.
+    A safe version of this script is mostly error handling.
+  </p>
+
+  <h2>A ready-made option: RBAC Janitor</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">RBAC Janitor</a>
+    on the Azure Marketplace. It runs as a managed application inside your own subscription, so
+    nothing leaves your tenant.
+  </div>
+  <p>
+    RBAC Janitor is that pattern packaged, with the error handling built in. Every day it lists the
+    subscription's role assignments, confirms each principal against Microsoft Graph, reports the
+    orphans and the assignment count versus the 4,000 limit to a Teams channel via an incoming
+    webhook, and, if you enable cleanup, deletes the confirmed orphans. It ships in dry-run,
+    report-only mode by default; deletion requires both explicitly turning it on and granting the
+    delete role. It fails closed (a principal that cannot be verified is reported, never deleted),
+    aborts and alerts if an implausibly large share of assignments suddenly looks orphaned, and
+    excludes management-group-inherited and Azure Lighthouse foreign-tenant assignments from
+    deletion entirely. Report-only mode needs just Reader plus Graph <code>Directory.Read.All</code>.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Orphaned assignments:</strong> deleting an identity leaves its role assignments
+      behind as "Identity not found" entries.</li>
+    <li><strong>The limit:</strong> 4,000 role assignments per subscription, hard, and orphans
+      count against it.</li>
+    <li><strong>Native bulk cleanup:</strong> none; removal is manual, per assignment, per scope.</li>
+    <li><strong>Safe automation:</strong> verify principals via Microsoft Graph and only delete on a
+      positive "gone" answer; treat lookup failures as unknown.</li>
+    <li><strong>Leave alone:</strong> assignments inherited from management groups and
+      foreign-tenant (Azure Lighthouse) principals.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/just-in-time-azure-role-elevation-without-pim`}>just-in-time Azure role elevation without PIM</a>.
+  </p>
+</BlogPost>

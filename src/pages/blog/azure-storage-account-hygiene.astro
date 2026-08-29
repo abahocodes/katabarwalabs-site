@@ -1,0 +1,96 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.storage-hygiene';
+---
+<BlogPost
+  title="Find the Azure storage accounts putting your data at risk"
+  description="Anonymous blob access, shared-key auth, weak TLS, open networks: Azure has no recurring report that grades every storage account's security settings. Here is how to build one, and a ready-made option."
+  tag="Azure security"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    Somewhere in your subscription there is a storage account with anonymous blob access still
+    enabled, or shared-key auth on, or no SAS expiration policy, or a firewall that allows every
+    network. You just do not know which one. Storage misconfigurations like these are a top source
+    of Azure data exposure, and the settings that matter are scattered across seven different blades
+    on each individual account. There is no simple recurring "how are my storage accounts
+    configured?" report, so the misconfigured account sits there until someone stumbles on it (or
+    someone outside your organization does first).
+  </p>
+
+  <h2>Why Azure cannot tell you this out of the box</h2>
+  <ul>
+    <li><strong>The portal shows one account at a time.</strong> Anonymous access, TLS version,
+      shared-key auth, SAS policy, and network rules each live on their own blade, per account.
+      Reviewing fifty accounts by hand means hundreds of clicks, and the answer is stale the moment
+      you finish.</li>
+    <li><strong>Azure Policy can audit individual settings, but you assemble it yourself.</strong>
+      You have to pick and assign the right policy definitions one by one, and the result is a
+      compliance blade you must remember to go look at. Nothing arrives in your team channel on a
+      schedule.</li>
+    <li><strong>There is no score.</strong> Native tooling gives you per-setting pass/fail lists,
+      not a single graded view that says "these three accounts are your worst offenders, and here
+      is the systemic gap across the whole estate."</li>
+  </ul>
+
+  <h2>The DIY approach: query the config, score it, schedule it</h2>
+  <p>
+    Every setting that matters is management-plane configuration, readable with nothing more than
+    the <strong>Reader</strong> role. Azure Resource Graph exposes them all in one query:
+  </p>
+  <ul>
+    <li>Query <code>microsoft.storage/storageaccounts</code> and project
+      <code>allowBlobPublicAccess</code>, <code>supportsHttpsTrafficOnly</code>,
+      <code>minimumTlsVersion</code>, <code>allowSharedKeyAccess</code>, <code>sasPolicy</code>,
+      <code>networkAcls.defaultAction</code>, and <code>publicNetworkAccess</code>.</li>
+    <li>Watch the nulls: on several of these properties a missing value means the
+      <em>default</em> applies (for example, shared-key auth is enabled unless explicitly
+      disabled), so treat null as the insecure setting where the default is permissive.</li>
+    <li>Weight the checks (anonymous blob access enabled should hurt the score far more than a
+      missing SAS policy) and compute a per-account grade.</li>
+    <li>Run it on a <strong>scheduled Function or Automation runbook</strong> and post the result
+      to Teams: in Teams, create a webhook via <strong>Workflows &rarr; "Post to a channel when a
+      webhook request is received"</strong> and send the report there.</li>
+  </ul>
+  <p>
+    The pieces are all standard; the work is in maintaining the check list, the weighting, the
+    null-handling, and the report format as your estate grows.
+  </p>
+
+  <h2>A ready-made option: Storage Hygiene Scorecard</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Storage Hygiene Scorecard</a>
+    on the Azure Marketplace. It runs as a managed application inside your own subscription, so
+    nothing leaves your tenant.
+  </div>
+  <p>
+    Storage Hygiene Scorecard is that pattern packaged. Every day it reads each storage account's
+    configuration and grades it against seven weighted checks: anonymous blob access disabled,
+    HTTPS-only traffic, minimum TLS 1.2, shared-key auth disabled (Entra-only), SAS expiration
+    policy set, network default action Deny, and public network access restricted. The scorecard
+    lands in your Teams channel as an Adaptive Card with the average hygiene score, the accounts
+    below your threshold with their specific gaps, and the most common systemic gaps across the
+    estate. It reads management-plane configuration only (never account keys, never your data) and
+    needs just the Reader role at subscription scope.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native recurring storage-config report:</strong> none; the portal is per-account,
+      Azure Policy is assemble-it-yourself and pull, not push.</li>
+    <li><strong>The seven settings that matter:</strong> anonymous blob access, HTTPS-only,
+      minimum TLS version, shared-key auth, SAS expiration policy, network default action, public
+      network access.</li>
+    <li><strong>All management-plane:</strong> readable with the Reader role alone; no keys, no
+      data access needed.</li>
+    <li><strong>Null means default:</strong> several properties are permissive when unset, so a
+      naive query that skips nulls will miss real exposure.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/just-in-time-azure-role-elevation-without-pim`}>time-boxed Azure role elevation without paying for PIM</a>.
+  </p>
+</BlogPost>

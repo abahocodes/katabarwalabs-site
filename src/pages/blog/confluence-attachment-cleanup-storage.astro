@@ -1,0 +1,103 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.atlassian.com/apps/1397083709/attachment-cleanup-for-confluence';
+---
+<BlogPost
+  title="Find what is eating your Confluence storage and clean it up safely"
+  description="Confluence Cloud has no site-wide view of attachment storage waste. Here is how to inventory every attachment, flag the unused, orphaned, and large files, and reclaim storage safely."
+  tag="Confluence administration"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    Attachments pile up in Confluence silently: images removed from a page but not from storage,
+    files sitting on pages that were archived or trashed years ago, giant uploads nobody remembers.
+    Ask "how much of my Confluence storage is attachment waste, and where is it?" and Confluence has
+    no answer, not per space and not site-wide. Detecting unused attachments
+    (<a class="text-brand" href="https://jira.atlassian.com/browse/CONFCLOUD-16577" target="_blank" rel="noopener">CONFCLOUD-16577</a>)
+    is one of the longest-standing storage-hygiene asks on the Confluence Cloud issue tracker, with
+    291 votes and no built-in report. If you own a storage budget, or your site is pressing against
+    its plan's storage quota, that blind spot is the first thing standing between you and a cleanup.
+  </p>
+
+  <h2>Why Confluence cannot tell you this out of the box</h2>
+  <ul>
+    <li><strong>There is no site-wide attachment inventory.</strong> Confluence has no screen that
+      lists every attachment across every space with its size, so you cannot sort by size or find
+      the biggest files anywhere in the product.</li>
+    <li><strong>Deleting an image from a page does not delete the file.</strong> The attachment
+      stays in storage, invisible on the page and still counting against your quota, and nothing
+      flags it as unreferenced.</li>
+    <li><strong>Archived and trashed pages keep their attachments.</strong> A page trashed years ago
+      still holds its files as dead weight, and no report surfaces them.</li>
+    <li><strong>Space-level views do not roll up.</strong> Even where you can see a page's
+      attachments, there is no total of reclaimable storage per space or for the site, so "which
+      spaces are wasting the most?" is unanswerable without tooling.</li>
+  </ul>
+
+  <h2>The DIY approach: walk the REST API and classify every file</h2>
+  <p>
+    Everything needed for the missing report is reachable through the Confluence Cloud v2 REST API.
+    A script can build the inventory:
+  </p>
+  <ul>
+    <li>Enumerate every <strong>space</strong> (<code>GET /wiki/api/v2/spaces</code>), then every
+      <strong>page</strong> in each space across all statuses: current, archived, and trashed.</li>
+    <li>List each page's <strong>attachments</strong>
+      (<code>GET /wiki/api/v2/pages/{'{id}'}/attachments</code>) to capture file size, media type,
+      and version.</li>
+    <li>Fetch each current page's <strong>storage-format body</strong> and check whether each
+      attachment's filename or file ID appears in it. Not referenced &rarr; flag it
+      <strong>unused</strong>. On an archived or trashed page &rarr; flag it
+      <strong>orphaned</strong>. Over a size threshold &rarr; flag it <strong>large</strong>.</li>
+    <li>Roll the flagged bytes up <strong>per space and site-wide</strong>, sort biggest-first, and
+      export to CSV for review.</li>
+  </ul>
+  <p>
+    The catches are volume and honesty. A large site means tens of thousands of paginated API calls,
+    so the script needs rate-limit handling, retries, and a way to resume mid-sweep, and it goes
+    stale the day after it runs unless you schedule it. And a textual reference scan has a known
+    blind spot: a file surfaced only through an attachments or gallery macro, or an include from
+    another page, reads as unused even though viewers can reach it. Any classification like this is
+    a review shortlist, not a delete list, which is why the deletion step should always be
+    previewed, confirmed by a human, and recoverable.
+  </p>
+
+  <h2>A ready-made option: Attachment Cleanup for Confluence</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Attachment Cleanup for Confluence</a>
+    on the Atlassian Marketplace. It is built on Atlassian Forge and runs entirely on Atlassian's
+    platform inside your own Confluence Cloud tenant, with no external servers and no data egress,
+    which makes it eligible for the "Runs on Atlassian" trust badge.
+  </div>
+  <p>
+    Attachment Cleanup for Confluence is that pattern packaged. It sweeps every space daily and on
+    demand, inventories every attachment on every page, flags each one as unused, orphaned, or
+    large, and totals storage and reclaimable bytes per space and site-wide, biggest opportunities
+    first. Spaces that could not be scanned completely are marked partial rather than padded with
+    guesses, and the full inventory exports as audit-ready CSV in one click. The report itself is
+    read-only, powered by three granular read scopes. Cleanup is opt-in: an admin ticks flagged
+    attachments, previews the exact set in a dry run that changes nothing, then confirms. The
+    confirmed delete is a soft delete that moves each file to its space Trash, where it stays
+    recoverable; the app never permanently purges and never touches a used file. Pricing is free up
+    to 10 users, then about $1 per user per month, billed by Atlassian.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native site-wide attachment report:</strong> none in Confluence Cloud
+      (CONFCLOUD-16577, 291 votes).</li>
+    <li><strong>Waste categories:</strong> unused (not referenced in the page's current body),
+      orphaned (on an archived or trashed page), and large files worth a look.</li>
+    <li><strong>DIY route:</strong> the v2 REST API exposes spaces, pages, attachments, and page
+      bodies; the work is pagination, retries, scheduling, and honest classification.</li>
+    <li><strong>Safe cleanup:</strong> treat any unused flag as a shortlist; preview first, confirm,
+      and prefer a soft delete to the space Trash so every removal is recoverable.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/find-and-delete-orphaned-azure-resources`}>find orphaned Azure resources still costing you money</a>.
+  </p>
+</BlogPost>

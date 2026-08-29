@@ -1,0 +1,95 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.dangling-dns';
+---
+<BlogPost
+  title="Find dangling DNS records in Azure before someone takes over your subdomain"
+  description="A CNAME pointing at a deleted Azure resource is a subdomain takeover waiting to happen. Here is how to find dangling DNS records in Azure, and why a one-off script is not enough."
+  tag="Azure security"
+  pubDate="August 29, 2026"
+  readMins={5}
+>
+  <p>
+    Somewhere in your Azure DNS zones there is probably a CNAME that points at a web app, storage
+    account, Front Door, or Traffic Manager profile that no longer exists. The team deleted the
+    resource months ago; nobody touched the DNS record. That record is now a subdomain takeover
+    waiting to happen: anyone who re-claims that Azure name (the <code>azurewebsites.net</code> or
+    <code>blob.core.windows.net</code> hostname your CNAME still points at) inherits your subdomain,
+    on your domain, with your reputation behind it. Phishing pages and cookie theft on
+    <code>something.yourcompany.com</code> follow from there.
+  </p>
+
+  <h2>Why Azure cannot do this out of the box</h2>
+  <ul>
+    <li><strong>Deleting a resource does not clean up DNS records that point at it.</strong> Azure
+      DNS has no linkage between a CNAME and the resource behind its target. The resource goes away,
+      the record stays, and nothing warns you.</li>
+    <li><strong>Microsoft documents the risk, then hands you a one-off script.</strong> The official
+      guidance ships a PowerShell script, <code>Get-DanglingDnsRecords</code>, that you run manually.
+      There is nothing that watches continuously, and dangling records appear whenever a resource is
+      deleted, not on the day you happen to run a script.</li>
+    <li><strong>A naive "does it resolve?" check misses a whole class of targets.</strong> Front
+      Door, CDN, and Traffic Manager endpoints resolve via wildcard DNS even when the backing
+      resource is gone, so the NXDOMAIN signal alone gives you false confidence exactly where the
+      takeover risk lives.</li>
+  </ul>
+
+  <h2>The DIY approach: enumerate, resolve, classify, repeat</h2>
+  <p>
+    The shape of a real fix is a scheduled job inside your own subscription:
+  </p>
+  <ul>
+    <li><strong>Enumerate every CNAME record</strong> across all Azure DNS zones in the
+      subscription. Reader at subscription scope is enough; this is a read-only exercise.</li>
+    <li><strong>Filter to Azure service suffixes</strong> such as <code>azurewebsites.net</code>,
+      <code>blob.core.windows.net</code>, <code>azurefd.net</code>, and
+      <code>trafficmanager.net</code>. These are the targets someone else can re-claim.</li>
+    <li><strong>Resolve each target and classify it.</strong> A target that no longer resolves is
+      <strong>dangling</strong> (takeover-able). A Front Door / CDN / Traffic Manager endpoint that
+      resolves via wildcard DNS, but whose backing resource you cannot confirm as owned, deserves a
+      <strong>review</strong> bucket rather than a green checkmark. A lookup that times out or
+      returns SERVFAIL is <strong>unchecked</strong>, not healthy. Everything else is ok.</li>
+    <li><strong>Run it daily and alert somewhere people look</strong>, like a Teams channel, and
+      suppress repeat alerts for records already verified healthy so the report stays readable.</li>
+  </ul>
+  <p>
+    The catch is the same as with every security chore: the script exists, the discipline does not.
+    A scan you ran in March says nothing about the resource a teammate deleted in April, and the
+    wildcard-DNS edge cases mean the obvious ten-line version quietly under-reports.
+  </p>
+
+  <h2>A ready-made option: Dangling DNS Sentinel</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Dangling DNS Sentinel</a>
+    on the Azure Marketplace. It runs as a managed application inside your own subscription, so
+    nothing leaves your tenant.
+  </div>
+  <p>
+    Dangling DNS Sentinel is that pattern packaged. Every day at 06:00 UTC it enumerates every CNAME
+    across all Azure DNS zones in the subscription, resolves each Azure-service target from inside
+    your tenant using the built-in resolver (no external lookup service), and classifies it as
+    dangling, review, unchecked, or ok, then reports to Teams as an Adaptive Card via a Workflows
+    webhook. Records verified healthy are not re-flagged daily, so the alert channel stays quiet
+    until something actually changes. It is read-only (it never changes DNS) and needs only the
+    Reader role at subscription scope.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>The risk:</strong> a CNAME pointing at a deleted Azure resource can be re-claimed by
+      anyone, who then inherits your subdomain.</li>
+    <li><strong>Native tooling:</strong> Microsoft documents the risk and ships the one-off
+      <code>Get-DanglingDnsRecords</code> PowerShell script, with nothing that watches
+      continuously.</li>
+    <li><strong>The blind spot:</strong> Front Door / CDN / Traffic Manager endpoints resolve via
+      wildcard DNS, so an NXDOMAIN-only check misses them.</li>
+    <li><strong>Least privilege:</strong> enumerating zones and resolving targets needs Reader at
+      subscription scope, and the job should never write to DNS.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/find-and-delete-orphaned-azure-resources`}>find orphaned Azure resources still costing you money</a>.
+  </p>
+</BlogPost>
