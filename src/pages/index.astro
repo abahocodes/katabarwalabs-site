@@ -8,7 +8,44 @@ const archetypes = [
   ['Credential & certificate hygiene', 'Alert before secrets and certificates expire and break production.'],
   ['Cost, waste & coverage gaps', 'Find leaks, orphaned resources, and assets with no backup.'],
 ];
-const marketplaces = ['Microsoft Azure Marketplace', 'Microsoft AppSource', 'AWS Marketplace', 'Atlassian Marketplace'];
+const marketplaces = [
+  ['Microsoft Azure Marketplace', '16 apps live'],
+  ['Atlassian Marketplace', '9 apps live'],
+  ['Microsoft AppSource', 'in progress'],
+  ['AWS Marketplace', 'in progress'],
+];
+
+const azureBase = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.';
+const azureApps: [string, string, string][] = [
+  ['Secret Sentinel', 'App registration secret and certificate expiry alerts', 'secret-sentinel'],
+  ['Cert Sentinel', 'App Gateway and App Service TLS certificate expiry alerts', 'cert-sentinel'],
+  ['Key Vault Expiry Digest', 'One digest so nothing in your vaults expires silently', 'keyvault-digest'],
+  ['Cost Breaker', 'A fuse box for your Azure bill', 'cost-breaker'],
+  ['Cost Spike Sentinel', 'Per-team cost anomaly alerts', 'cost-spike-sentinel'],
+  ['Orphan Cleanup', 'Stop paying for resources attached to nothing', 'orphan-cleanup'],
+  ['JIT RBAC', 'Just-in-time role elevation with Teams approval', 'jit-rbac'],
+  ['RBAC Janitor', 'Clean up orphaned "Identity not found" role assignments', 'rbac-janitor'],
+  ['Role Definition Guard', 'Detect dangerous custom role definitions', 'role-definition-guard'],
+  ['Identity Lifecycle', 'Entra joiner and leaver automations at a flat fee', 'identity-lifecycle'],
+  ['Policy Exemption Tracker', 'No policy exemption lapses or lingers unnoticed', 'policy-exemptions'],
+  ['Storage Hygiene Scorecard', 'Grade every storage account on access security', 'storage-hygiene'],
+  ['Dangling DNS Sentinel', 'Subdomain-takeover monitoring for your DNS zones', 'dangling-dns'],
+  ['Backup Auditor', 'Prove every VM, database, and share is backed up', 'backup-auditor'],
+  ['Alert Blindspot', 'Find the resources you have zero alerts on', 'alert-blindspot'],
+  ['Auto Tagger', 'CreatedBy and CreatedOn tags for every resource', 'auto-tagger'],
+];
+
+const atlassianApps: [string, string, string][] = [
+  ['Access Snapshot & Drift', 'Daily point-in-time project access snapshots, diffed for drift', 'https://marketplace.atlassian.com/apps/3543425839/access-snapshot-drift'],
+  ['Compliance Log Vault', 'Long-term Jira audit log retention with CSV export', 'https://marketplace.atlassian.com/apps/4152437534/compliance-log-vault'],
+  ['Inactive-User Hygiene', 'Reclaim idle Jira seats from a read-only inactivity worklist', 'https://marketplace.atlassian.com/apps/2720285106/inactive-user-hygiene'],
+  ['Orphaned-Owner Cleanup', 'Reassign filters, dashboards, and issues owned by deactivated users', 'https://marketplace.atlassian.com/apps/2038592087/orphaned-owner-cleanup'],
+  ['Portal Governance for JSM', 'Per-desk portal access matrix with exposure flags', 'https://marketplace.atlassian.com/apps/1250207589/portal-governance-for-jsm'],
+  ['Notification Log for JSM', 'A record of every outgoing customer notification', 'https://marketplace.atlassian.com/apps/966773862/notification-log-for-jsm'],
+  ['Assets Export Manager for JSM', 'Bulk-export a JSM Assets schema to CSV or JSON', 'https://marketplace.atlassian.com/apps/3829199441/assets-export-manager-for-jira-service-management'],
+  ['Attachment Cleanup for Confluence', 'Find unused and orphaned attachments, total reclaimable storage', 'https://marketplace.atlassian.com/apps/1397083709/attachment-cleanup-for-confluence'],
+  ['Page-Restriction Governance', 'Inventory every restricted Confluence page and who can reach it', 'https://marketplace.atlassian.com/apps/511936964/page-restriction-governance'],
+];
 
 const llmgraphFeatures = [
   'No-code visual canvas + natural-language workflow builder',
@@ -100,7 +137,7 @@ const heroBg =
             ))}
           </ul>
           <div class="mt-6 flex flex-wrap gap-3 pt-1">
-            <a href="#coverage" class="btn btn-line">Explore the portfolio</a>
+            <a href="#apps" class="btn btn-line">Explore the portfolio</a>
           </div>
         </div>
       </div>
@@ -159,14 +196,52 @@ const heroBg =
     </div>
   </section>
 
+  <!-- live apps -->
+  <section id="apps" class="border-b border-line py-[66px]">
+    <div class="wrap">
+      <span class="eyebrow">Live today</span>
+      <h2 class="mt-2 text-[clamp(23px,3.2vw,30px)] font-extrabold tracking-[-0.02em]">{azureApps.length + atlassianApps.length} apps you can install right now.</h2>
+      <p class="mt-3 max-w-[64ch] text-[17px] text-muted">
+        Every link below goes to a live marketplace listing. Each app installs into your own tenant
+        and is billed by the marketplace.
+      </p>
+
+      <h3 class="mt-9 text-[13px] font-semibold uppercase tracking-[0.1em] text-muted">Microsoft Azure Marketplace · {azureApps.length} apps</h3>
+      <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {azureApps.map(([name, blurb, slug]) => (
+          <a href={azureBase + slug} target="_blank" rel="noopener" class="group rounded-xl border border-line bg-white px-4 py-3.5 transition hover:border-brand">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-ink group-hover:text-brand">{name}</span>
+              <svg class="shrink-0 text-muted group-hover:text-brand" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </div>
+            <p class="mt-1 text-[13.5px] leading-snug text-muted">{blurb}</p>
+          </a>
+        ))}
+      </div>
+
+      <h3 class="mt-9 text-[13px] font-semibold uppercase tracking-[0.1em] text-muted">Atlassian Marketplace · {atlassianApps.length} apps</h3>
+      <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {atlassianApps.map(([name, blurb, url]) => (
+          <a href={url} target="_blank" rel="noopener" class="group rounded-xl border border-line bg-white px-4 py-3.5 transition hover:border-brand">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-bold text-ink group-hover:text-brand">{name}</span>
+              <svg class="shrink-0 text-muted group-hover:text-brand" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </div>
+            <p class="mt-1 text-[13.5px] leading-snug text-muted">{blurb}</p>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
   <!-- marketplaces -->
   <section id="marketplaces" class="border-b border-line py-[66px]">
     <div class="wrap">
       <span class="eyebrow">Where to find us</span>
       <h2 class="mt-2 text-[clamp(23px,3.2vw,30px)] font-extrabold tracking-[-0.02em]">Rolling out across the marketplaces you already buy from.</h2>
       <div class="mt-7 flex flex-wrap gap-3">
-        {marketplaces.map((m) => (
-          <span class="inline-flex items-center gap-2.5 rounded-full border border-line bg-soft px-[18px] py-2.5 text-[14.5px] font-semibold text-ink2">{m}</span>
+        {marketplaces.map(([m, status]) => (
+          <span class="inline-flex items-center gap-2.5 rounded-full border border-line bg-soft px-[18px] py-2.5 text-[14.5px] font-semibold text-ink2">{m}<span class="font-normal text-muted">· {status}</span></span>
         ))}
       </div>
     </div>
