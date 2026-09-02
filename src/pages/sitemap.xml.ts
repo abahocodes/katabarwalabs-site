@@ -28,6 +28,7 @@ const paths = [
   '/blog/find-azure-vms-without-backup',
   '/blog/keep-atlassian-audit-logs-beyond-retention',
   '/blog/jira-group-usage-beyond-permission-schemes',
+  '/blog/export-jsm-assets-object-schema',
   '/blog/jira-filters-dashboards-deactivated-owners',
   '/blog/confluence-attachment-cleanup-storage',
   '/blog/audit-jsm-portal-customer-access',

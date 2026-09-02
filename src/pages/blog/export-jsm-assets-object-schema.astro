@@ -1,0 +1,75 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.atlassian.com/apps/3829199441/assets-export-manager-for-jira-service-management';
+---
+<BlogPost
+  title="How to bulk-export a JSM Assets object schema (CSV or JSON)"
+  description="Jira Service Management Assets has no built-in way to export a whole object schema. Here is the DIY AQL-paging approach, its traps, and a ready-made in-tenant option."
+  tag="Jira Service Management"
+  pubDate="September 2, 2026"
+  readMins={5}
+>
+  <p>
+    Sooner or later every Assets (formerly Insight) admin needs the whole CMDB out: an auditor wants
+    the asset register, a migration needs a baseline, or someone sensible wants a backup before a
+    big cleanup. And then you discover the gap: Jira Service Management Assets has no built-in bulk
+    export of an object schema. The feature request has been open on the JSM issue tracker for
+    years with hundreds of votes, and the accepted workaround is exporting object type by object
+    type, by hand, from the UI.
+  </p>
+
+  <h2>Why there is no easy native path</h2>
+  <ul>
+    <li><strong>The UI exports one object type at a time.</strong> A real schema has dozens of
+      types; a full pull is dozens of manual exports that then need stitching.</li>
+    <li><strong>Attributes vary per type.</strong> Each object type has its own attribute set, so
+      naive concatenation produces misaligned columns.</li>
+    <li><strong>Reads are role-gated.</strong> Assets permissions live on each schema's Roles tab,
+      separate from Jira permissions, which surprises every script author the first time.</li>
+  </ul>
+
+  <h2>The DIY approach: page the Assets REST API with AQL</h2>
+  <ul>
+    <li>List schemas and object types via the Assets workspace REST API.</li>
+    <li>For each object type, page through objects with an AQL query
+      (<code>objectType = "..."</code>), requesting attributes with each page.</li>
+    <li>Normalize per-type attribute columns before writing CSV, or emit JSON and defer the
+      flattening.</li>
+    <li>Handle pagination limits, rate limits, and the schema-role grant for whatever account the
+      script runs as.</li>
+  </ul>
+  <p>
+    It works, and like most one-off admin scripts it then has to live somewhere, keep its API token
+    somewhere safer, and survive the next person asking for the same export six months later.
+  </p>
+
+  <h2>A ready-made option: Assets Export Manager</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Assets Export Manager for Jira Service Management</a>
+    on the Atlassian Marketplace. It is a Forge app: the export is generated on Atlassian's own
+    platform inside your tenant and streamed to your browser, so nothing leaves your instance.
+  </div>
+  <p>
+    Pick an object schema, pick CSV or JSON, and it exports every object with all attributes in one
+    run. It is read-only and honest about limits: very large schemas are truncated with a clear
+    flag in the output rather than silently cut. One setup note, stated upfront because Assets
+    gates reads behind schema roles: after install you grant the app read access on each schema's
+    Roles tab, then it just works.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native gap:</strong> no whole-schema export; the UI does one object type at a
+      time.</li>
+    <li><strong>DIY fix:</strong> AQL-paged pulls per object type with per-type column
+      normalization and schema-role grants for the script account.</li>
+    <li><strong>Packaged fix:</strong> one-click schema export to CSV or JSON, generated in-tenant,
+      read-only, with explicit truncation flags on very large schemas.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/keep-atlassian-audit-logs-beyond-retention`}>Jira's audit log has a similar export gap: how to keep records past the retention window</a>.
+  </p>
+</BlogPost>
