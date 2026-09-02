@@ -27,6 +27,7 @@ const paths = [
   '/blog/find-azure-resources-with-no-alerts',
   '/blog/find-azure-vms-without-backup',
   '/blog/keep-atlassian-audit-logs-beyond-retention',
+  '/blog/jira-group-usage-beyond-permission-schemes',
   '/blog/jira-filters-dashboards-deactivated-owners',
   '/blog/confluence-attachment-cleanup-storage',
   '/blog/audit-jsm-portal-customer-access',
@@ -34,7 +35,7 @@ const paths = [
   '/privacy',
 ];
 
-const lastmod = '2026-09-01';
+const lastmod = '2026-09-02';
 
 const urls = paths
   .map((p) => {

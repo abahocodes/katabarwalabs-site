@@ -1,0 +1,114 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listing = 'https://marketplace.atlassian.com/apps/3162504883/access-governance-reporter';
+---
+<BlogPost
+  title="Atlassian's own script for finding group usage in Jira, and what it misses"
+  description="Atlassian's support KB hands you a Python script that finds a group's permission-scheme usage and then tells you it is unsupported and incomplete. Here is what the script covers, what it misses, and how to close the gap."
+  tag="Jira administration"
+  pubDate="September 2, 2026"
+  readMins={6}
+>
+  <p>
+    Ask any Jira admin who has tried to delete a group: before you remove it, you need to know every
+    place it is used, or something breaks quietly three weeks later. The feature request for a native
+    group-usage view has been open on the Jira issue tracker for years and has collected over a
+    thousand votes. Atlassian's answer, for now, lives in a support KB article: a Python script you
+    run yourself against the REST API. The same article tells you the script is beyond Atlassian
+    Support's scope, and that permission schemes are not the only place groups are used. Both
+    statements are worth taking seriously.
+  </p>
+
+  <h2>What the KB script actually does</h2>
+  <ul>
+    <li>Calls <code>GET /rest/api/3/permissionscheme?expand=permissions</code> to pull every
+      permission scheme and its grants.</li>
+    <li>Loops through the grants looking for your target group name.</li>
+    <li>Prints the names of the schemes that reference the group.</li>
+  </ul>
+  <p>
+    That is a useful start, and for a one-off check on a small site it may be all you need. But the
+    output is a list of scheme names, not answers. It does not tell you which projects use those
+    schemes, which permissions the group actually holds there, or who is in the group and therefore
+    inherits all of it.
+  </p>
+
+  <h2>Where groups hide beyond permission schemes</h2>
+  <p>
+    The KB's own caveat is the important part. A group can also sit in any of these, and the script
+    sees none of them:
+  </p>
+  <ul>
+    <li><strong>Project roles</strong>, per project, plus the default role actors applied to every
+      new project.</li>
+    <li><strong>Notification schemes</strong>, so deleting the group silently stops emails.</li>
+    <li><strong>Issue security levels</strong>, so members lose visibility of restricted issues.</li>
+    <li><strong>Filter sharing and edit grants</strong>, <code>membersOf()</code> clauses inside
+      filter JQL, and filter subscriptions.</li>
+    <li><strong>Dashboard sharing</strong>.</li>
+    <li><strong>Product access</strong> (application roles), which is how the group may be granting
+      Jira seats.</li>
+    <li><strong>Group-picker custom fields</strong>, workflow conditions and validators, automation
+      rules, and board permissions.</li>
+    <li><strong>Global permissions</strong>, where Jira Cloud has no public API that returns the
+      grantees at all.</li>
+  </ul>
+
+  <h2>Extending the DIY approach</h2>
+  <p>
+    If you want to stay in script land, the honest version of the job looks like this:
+  </p>
+  <ul>
+    <li>Start from the KB script's scheme scan, then resolve schemes to projects with
+      <code>GET /rest/api/3/project/&#123;id&#125;/permissionscheme</code> so you know where each
+      grant actually applies.</li>
+    <li>Walk <code>GET /rest/api/3/project/&#123;id&#125;/role</code> and each role's actors to catch
+      role-based grants, which the scheme scan misses entirely.</li>
+    <li>Add per-surface passes for notification schemes, issue security schemes, filters, and
+      dashboards, each with its own pagination and its own edge cases.</li>
+    <li>Keep a completeness note per surface, because some (global permissions above all) cannot be
+      enumerated via the public API, and an audit that silently omits them is worse than one that
+      says so.</li>
+  </ul>
+  <p>
+    One admin on the feature-request thread reported his home-grown version of this makes roughly
+    two thousand REST requests per run. It works, until the person who wrote it leaves, or an API
+    changes, or the security review asks where the script runs and what token it uses.
+  </p>
+
+  <h2>A ready-made option: Access Governance Reporter</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Access Governance Reporter</a>
+    on the Atlassian Marketplace. It is a Forge app that runs entirely on Atlassian's platform inside
+    your Jira Cloud tenant; no data leaves your instance.
+  </div>
+  <p>
+    Access Governance Reporter is the productized version of the pattern above, in both directions.
+    It crawls permission schemes with their grants, resolves them to the projects that use them, and
+    walks every project role and its actors. From that it answers the group question the KB script
+    starts on: for any group, every project and permission it grants, and whether the grant comes
+    from a scheme or a role. It also answers the reverse question the script cannot: for any user,
+    the full effective-access view, every project and permission with the exact group or role that
+    grants it. A summary-first dashboard loads instantly at any site size, everything is searchable
+    server-side, and one click exports audit-ready CSV for access reviews.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>The native gap:</strong> Jira Cloud has no built-in view of where a group is used;
+      the thousand-vote feature request remains open.</li>
+    <li><strong>Atlassian's DIY answer:</strong> an unsupported Python script covering permission
+      schemes only, with the KB itself noting groups also live in global permissions, filter shares,
+      dashboards, and more.</li>
+    <li><strong>The durable fix:</strong> a crawl that resolves schemes to projects and includes
+      role actors, with honest completeness notes for surfaces the API cannot enumerate.</li>
+    <li><strong>Least privilege:</strong> the read path needs only read scopes; nothing in Jira is
+      modified by reporting.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/keep-atlassian-audit-logs-beyond-retention`}>Jira's audit log has the same DIY-script answer for retention: here is how to keep records past the window</a>.
+  </p>
+</BlogPost>
