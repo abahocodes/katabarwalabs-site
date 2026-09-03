@@ -1,0 +1,144 @@
+---
+import Base from './Base.astro';
+import type { AtlassianApp } from '../data/atlassianApps';
+
+interface Props { app: AtlassianApp; }
+const { app } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const img = (n: number) => `${base}/apps/${app.slug}/h${n}.png`;
+---
+<Base title={`${app.title} | ${app.name} by Katabarwa Labs`} description={app.description}>
+  <!-- hero -->
+  <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
+    <div class="wrap pt-[56px] pb-[52px]">
+      <a href={`${base}/apps`} class="text-[13px] font-semibold uppercase tracking-[0.14em] text-accent hover:text-white">
+        &larr; All apps
+      </a>
+      <p class="mt-4 text-[13px] font-semibold uppercase tracking-[0.14em] text-[#a9bce6]">{app.product} · {app.name}</p>
+      <h1 class="mt-2 max-w-[820px] text-[clamp(26px,4vw,40px)] font-extrabold leading-[1.12] tracking-[-0.02em] text-white">
+        {app.title}
+      </h1>
+      <p class="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-[#c8d6f7]">{app.tagline}</p>
+      <div class="mt-7 flex flex-wrap items-center gap-3">
+        <a href={app.listing} target="_blank" rel="noopener" class="btn btn-primary">Try it free on the Atlassian Marketplace</a>
+        <a href={app.docs} target="_blank" rel="noopener" class="btn btn-ghost">Documentation</a>
+      </div>
+      <p class="mt-4 text-[13px] text-[#a9bce6]">Runs entirely on Atlassian Forge inside your own tenant. No external servers, no data egress.</p>
+    </div>
+  </section>
+
+  <!-- problem -->
+  <section class="wrap pt-12">
+    <span class="eyebrow">The gap</span>
+    <p class="mt-3 max-w-[72ch] text-[17px] leading-relaxed text-ink2">{app.problem}</p>
+  </section>
+
+  <!-- features + screenshots -->
+  <section class="wrap pt-10">
+    <span class="eyebrow">What it does</span>
+    <ul class="mt-4 max-w-[72ch] list-disc space-y-2 pl-6 text-[16px] text-ink2">
+      {app.features.map((f) => <li>{f}</li>)}
+    </ul>
+
+    <div class="mt-10 space-y-10">
+      {[1, 2, 3].map((n) => (
+        <figure class="overflow-hidden rounded-2xl border border-line bg-soft">
+          <img src={img(n)} alt={app.captions[n - 1]} loading={n === 1 ? 'eager' : 'lazy'} class="w-full" width="920" height="450" />
+          <figcaption class="border-t border-line px-5 py-3 text-[14px] text-muted">{app.captions[n - 1]}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+
+  {app.youtube && (
+    <section class="wrap pt-12">
+      <span class="eyebrow">60-second walkthrough</span>
+      <div class="mt-4 overflow-hidden rounded-2xl border border-line" style="aspect-ratio:16/9">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${app.youtube}`}
+          title={`${app.name} demo video`}
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          class="h-full w-full"
+        ></iframe>
+      </div>
+    </section>
+  )}
+
+  <!-- honest limits -->
+  <section class="wrap pt-12">
+    <span class="eyebrow">Honest about its limits</span>
+    <ul class="mt-4 max-w-[72ch] list-disc space-y-2 pl-6 text-[16px] text-ink2">
+      {app.honest.map((h) => <li>{h}</li>)}
+      {app.writes && <li><strong>The one write path, honestly scoped:</strong> {app.writes}</li>}
+      {!app.writes && <li><strong>Read-only.</strong> This app reports and exports; it changes nothing in your instance.</li>}
+    </ul>
+  </section>
+
+  <!-- security / scopes -->
+  <section class="wrap pt-12">
+    <span class="eyebrow">Security &amp; permissions</span>
+    <p class="mt-3 max-w-[72ch] text-[16px] text-ink2">
+      Built on Atlassian Forge: the app runs on Atlassian's own serverless platform inside your
+      tenant, stores its data in Forge storage, and makes no external network calls. Every scope it
+      requests, and why:
+    </p>
+    <div class="mt-4 max-w-[760px] overflow-hidden rounded-xl border border-line">
+      <table class="w-full text-[15px]">
+        <tbody>
+          {app.scopes.map((s) => (
+            <tr class="border-b border-line last:border-0">
+              <td class="bg-soft px-4 py-2.5 font-mono text-[13.5px] text-ink">{s.scope}</td>
+              <td class="px-4 py-2.5 text-ink2">{s.why}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="wrap pt-12">
+    <span class="eyebrow">FAQ</span>
+    <div class="mt-4 max-w-[72ch] space-y-5">
+      <div>
+        <h3 class="text-[16px] font-bold text-ink">Does any data leave my instance?</h3>
+        <p class="mt-1 text-[16px] text-ink2">
+          No. The app runs on Atlassian Forge inside your own tenant with zero external egress,
+          which makes it eligible for Atlassian's "Runs on Atlassian" trust marker.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-[16px] font-bold text-ink">How is it billed?</h3>
+        <p class="mt-1 text-[16px] text-ink2">
+          Through the Atlassian Marketplace, on your existing Atlassian bill, priced per user like
+          any Cloud app. The listing has a free evaluation and the exact calculator for your tier.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-[16px] font-bold text-ink">Where do I get support?</h3>
+        <p class="mt-1 text-[16px] text-ink2">
+          Email <a class="text-brand" href="mailto:support@llmgraph.ai">support@llmgraph.ai</a> or
+          open an issue from the <a class="text-brand" href={app.docs} target="_blank" rel="noopener">documentation page</a>.
+          You talk directly to the people who build the app.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="wrap py-14">
+    <div class="rounded-2xl bg-[linear-gradient(160deg,#0a1636,#152f6b)] px-8 py-10 text-center">
+      <h2 class="text-[24px] font-extrabold text-white">Install {app.name} in about a minute.</h2>
+      <p class="mx-auto mt-2 max-w-[52ch] text-[15px] text-[#c8d6f7]">
+        Free evaluation from the Marketplace listing. If it does not fit your workflow, tell us what
+        would and we will build it.
+      </p>
+      <div class="mt-6 flex flex-wrap justify-center gap-3">
+        <a href={app.listing} target="_blank" rel="noopener" class="btn btn-primary">Try it free</a>
+        {app.blog && <a href={`${base}${app.blog}`} class="btn btn-ghost">Read the deep-dive</a>}
+      </div>
+    </div>
+  </section>
+</Base>

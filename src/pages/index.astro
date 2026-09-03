@@ -1,6 +1,8 @@
 ---
 import Base from '../layouts/Base.astro';
 
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+
 const archetypes = [
   ['Audit-log retention & export', 'Keep compliance evidence past the platform’s short retention window.'],
   ['Orphaned-owner cleanup', 'Reclaim resources and seats left behind by people who’ve left.'],
@@ -35,17 +37,19 @@ const azureApps: [string, string, string][] = [
   ['Auto Tagger', 'CreatedBy and CreatedOn tags for every resource', 'auto-tagger'],
 ];
 
+// Third element is the internal app-page path (deep dive + screenshots + demo),
+// which carries the Try-it-free CTA to the Marketplace listing.
 const atlassianApps: [string, string, string][] = [
-  ['Access Governance Reporter', 'Who can access what in Jira, per user and per group, with audit CSV', 'https://marketplace.atlassian.com/apps/3162504883/access-governance-reporter'],
-  ['Access Snapshot & Drift', 'Daily point-in-time project access snapshots, diffed for drift', 'https://marketplace.atlassian.com/apps/3543425839/access-snapshot-drift'],
-  ['Compliance Log Vault', 'Long-term Jira audit log retention with CSV export', 'https://marketplace.atlassian.com/apps/4152437534/compliance-log-vault'],
-  ['Inactive-User Hygiene', 'Reclaim idle Jira seats from a read-only inactivity worklist', 'https://marketplace.atlassian.com/apps/2720285106/inactive-user-hygiene'],
-  ['Orphaned-Owner Cleanup', 'Reassign filters, dashboards, and issues owned by deactivated users', 'https://marketplace.atlassian.com/apps/2038592087/orphaned-owner-cleanup'],
-  ['Portal Governance for JSM', 'Per-desk portal access matrix with exposure flags', 'https://marketplace.atlassian.com/apps/1250207589/portal-governance-for-jsm'],
-  ['Notification Log for JSM', 'A record of every outgoing customer notification', 'https://marketplace.atlassian.com/apps/966773862/notification-log-for-jsm'],
-  ['Assets Export Manager for JSM', 'Bulk-export a JSM Assets schema to CSV or JSON', 'https://marketplace.atlassian.com/apps/3829199441/assets-export-manager-for-jira-service-management'],
-  ['Attachment Cleanup for Confluence', 'Find unused and orphaned attachments, total reclaimable storage', 'https://marketplace.atlassian.com/apps/1397083709/attachment-cleanup-for-confluence'],
-  ['Page-Restriction Governance', 'Inventory every restricted Confluence page and who can reach it', 'https://marketplace.atlassian.com/apps/511936964/page-restriction-governance'],
+  ['Access Governance Reporter', 'Who can access what in Jira, per user and per group, with audit CSV', '/apps/jira-access-governance-reporter'],
+  ['Access Snapshot & Drift', 'Daily point-in-time project access snapshots, diffed for drift', '/apps/jira-access-snapshot-drift'],
+  ['Compliance Log Vault', 'Long-term Jira audit log retention with CSV export', '/apps/jira-audit-log-retention'],
+  ['Inactive-User Hygiene', 'Reclaim idle Jira seats from a read-only inactivity worklist', '/apps/jira-inactive-user-hygiene'],
+  ['Orphaned-Owner Cleanup', 'Reassign filters, dashboards, and issues owned by deactivated users', '/apps/jira-orphaned-owner-cleanup'],
+  ['Portal Governance for JSM', 'Per-desk portal access matrix with exposure flags', '/apps/jsm-portal-governance'],
+  ['Notification Log for JSM', 'A record of every outgoing customer notification', '/apps/jsm-notification-log'],
+  ['Assets Export Manager for JSM', 'Bulk-export a JSM Assets schema to CSV or JSON', '/apps/jsm-assets-export'],
+  ['Attachment Cleanup for Confluence', 'Find unused and orphaned attachments, total reclaimable storage', '/apps/confluence-attachment-cleanup'],
+  ['Page-Restriction Governance', 'Inventory every restricted Confluence page and who can reach it', '/apps/confluence-page-restriction-governance'],
 ];
 
 const llmgraphFeatures = [
@@ -223,7 +227,7 @@ const heroBg =
       <h3 class="mt-9 text-[13px] font-semibold uppercase tracking-[0.1em] text-muted">Atlassian Marketplace · {atlassianApps.length} apps</h3>
       <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {atlassianApps.map(([name, blurb, url]) => (
-          <a href={url} target="_blank" rel="noopener" class="group rounded-xl border border-line bg-white px-4 py-3.5 transition hover:border-brand">
+          <a href={`${base}${url}`} class="group rounded-xl border border-line bg-white px-4 py-3.5 transition hover:border-brand">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-ink group-hover:text-brand">{name}</span>
               <svg class="shrink-0 text-muted group-hover:text-brand" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>

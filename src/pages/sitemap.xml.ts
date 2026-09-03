@@ -32,11 +32,22 @@ const paths = [
   '/blog/jira-filters-dashboards-deactivated-owners',
   '/blog/confluence-attachment-cleanup-storage',
   '/blog/audit-jsm-portal-customer-access',
+  '/apps',
+  '/apps/jira-access-governance-reporter',
+  '/apps/jira-access-snapshot-drift',
+  '/apps/jira-audit-log-retention',
+  '/apps/jira-inactive-user-hygiene',
+  '/apps/jira-orphaned-owner-cleanup',
+  '/apps/jsm-portal-governance',
+  '/apps/jsm-notification-log',
+  '/apps/jsm-assets-export',
+  '/apps/confluence-attachment-cleanup',
+  '/apps/confluence-page-restriction-governance',
   '/support',
   '/privacy',
 ];
 
-const lastmod = '2026-09-02';
+const lastmod = '2026-09-03';
 
 const urls = paths
   .map((p) => {
