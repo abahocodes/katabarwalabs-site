@@ -1,0 +1,55 @@
+---
+import Base from '../layouts/Base.astro';
+import { azureApps, azureGroups, azureBase } from '../data/azureApps';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Base
+  title="Azure Marketplace apps by Katabarwa Labs — cost, secret, and governance tools for your own tenant"
+  description="Sixteen single-purpose Azure tools: cost control, secret and certificate expiry alerts, backup coverage, RBAC hygiene, and governance. Each deploys as a managed application inside your own subscription with no vendor backend."
+>
+  <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
+    <div class="wrap pt-[56px] pb-[52px]">
+      <span class="eyebrow">Microsoft Azure Marketplace</span>
+      <h1 class="mt-3 max-w-[24ch] text-[clamp(28px,4.5vw,42px)] font-extrabold leading-[1.1] tracking-[-0.02em] text-white">
+        Small tools for the Azure gaps that bite on a Friday night.
+      </h1>
+      <p class="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-[#c8d6f7]">
+        Sixteen single-purpose operational tools. Each deploys as a managed application into your
+        own subscription under an identity you control: a serverless function, a schedule, and
+        alerts to your own Slack, Teams, or email. No vendor backend, so nothing leaves your
+        environment. Billed flat per month through the Azure Marketplace.
+      </p>
+    </div>
+  </section>
+
+  {azureGroups.map(([group, blurb]) => (
+    <section class="wrap pt-12 last-of-type:pb-16">
+      <h2 class="text-[22px] font-extrabold text-ink">{group}</h2>
+      <p class="mt-1 text-[15px] text-muted">{blurb}</p>
+      <div class="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {azureApps.filter((a) => a.group === group).map((a) => (
+          <a href={`${azureBase}${a.slug}`} target="_blank" rel="noopener" class="card block">
+            <div class="flex items-center justify-between gap-2">
+              <h3 class="text-[16.5px] font-bold text-ink">{a.name}</h3>
+              <svg class="shrink-0 text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
+            </div>
+            <p class="mt-1.5 text-[14.5px] leading-relaxed text-ink2">{a.blurb}</p>
+            <span class="mt-3 inline-block text-[14px] font-semibold text-brand">View on Azure Marketplace &rarr;</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  ))}
+
+  <section class="wrap pb-16 pt-12">
+    <div class="rounded-2xl border border-line bg-soft px-8 py-8">
+      <h2 class="text-[19px] font-bold text-ink">Also from Katabarwa Labs: 10 Atlassian apps.</h2>
+      <p class="mt-2 max-w-[68ch] text-[15px] text-ink2">
+        The same in-tenant model for Jira, Jira Service Management, and Confluence Cloud:
+        governance, audit retention, and hygiene tools that run entirely on Atlassian Forge.
+      </p>
+      <a href={`${base}/apps`} class="mt-4 inline-block text-[14.5px] font-semibold text-brand">See the Atlassian apps &rarr;</a>
+    </div>
+  </section>
+</Base>

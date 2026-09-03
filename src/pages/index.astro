@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { azureApps as azureAppData, azureBase } from '../data/azureApps';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -17,25 +18,7 @@ const marketplaces = [
   ['AWS Marketplace', 'in progress'],
 ];
 
-const azureBase = 'https://marketplace.microsoft.com/en-us/product/azure-application/katabarwalabs.';
-const azureApps: [string, string, string][] = [
-  ['Secret Sentinel', 'App registration secret and certificate expiry alerts', 'secret-sentinel'],
-  ['Cert Sentinel', 'App Gateway and App Service TLS certificate expiry alerts', 'cert-sentinel'],
-  ['Key Vault Expiry Digest', 'One digest so nothing in your vaults expires silently', 'keyvault-digest'],
-  ['Cost Breaker', 'A fuse box for your Azure bill', 'cost-breaker'],
-  ['Cost Spike Sentinel', 'Per-team cost anomaly alerts', 'cost-spike-sentinel'],
-  ['Orphan Cleanup', 'Stop paying for resources attached to nothing', 'orphan-cleanup'],
-  ['JIT RBAC', 'Just-in-time role elevation with Teams approval', 'jit-rbac'],
-  ['RBAC Janitor', 'Clean up orphaned "Identity not found" role assignments', 'rbac-janitor'],
-  ['Role Definition Guard', 'Detect dangerous custom role definitions', 'role-definition-guard'],
-  ['Identity Lifecycle', 'Entra joiner and leaver automations at a flat fee', 'identity-lifecycle'],
-  ['Policy Exemption Tracker', 'No policy exemption lapses or lingers unnoticed', 'policy-exemptions'],
-  ['Storage Hygiene Scorecard', 'Grade every storage account on access security', 'storage-hygiene'],
-  ['Dangling DNS Sentinel', 'Subdomain-takeover monitoring for your DNS zones', 'dangling-dns'],
-  ['Backup Auditor', 'Prove every VM, database, and share is backed up', 'backup-auditor'],
-  ['Alert Blindspot', 'Find the resources you have zero alerts on', 'alert-blindspot'],
-  ['Auto Tagger', 'CreatedBy and CreatedOn tags for every resource', 'auto-tagger'],
-];
+const azureApps = azureAppData.map((a) => [a.name, a.blurb, a.slug] as [string, string, string]);
 
 // Third element is the internal app-page path (deep dive + screenshots + demo),
 // which carries the Try-it-free CTA to the Marketplace listing.

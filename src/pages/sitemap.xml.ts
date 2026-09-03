@@ -33,6 +33,7 @@ const paths = [
   '/blog/confluence-attachment-cleanup-storage',
   '/blog/audit-jsm-portal-customer-access',
   '/apps',
+  '/azure',
   '/apps/jira-access-governance-reporter',
   '/apps/jira-access-snapshot-drift',
   '/apps/jira-audit-log-retention',
