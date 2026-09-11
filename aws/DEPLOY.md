@@ -87,3 +87,30 @@ source card lives in git history (commit that added `public/og`). `sitemap.xml` 
 the pages on disk with `lastmod` from git, so nothing needs listing by hand.
 
 **Copy rule**: no em or en dashes in user-facing strings. Titles use `|` as the separator.
+
+## 5. The Atlassian link layer (added 2026-09-10)
+
+Modelled on the vendors that rank (Tempo, SaaSJet, Deviniti, Exalate): every product page and
+every Atlassian post links out to Atlassian properties wherever a reader would genuinely follow
+the link. All of it is driven from `src/data/atlassianApps.ts`; nothing is hand-maintained in
+templates.
+
+- `origin`: the public JAC ticket the app answers, with its title and vote count. Rendered as
+  "Why it exists" on the product page and in the post's References block.
+- `community`: our App Central article, once live. Rendered as a cross-link in both places. The
+  Partner Rules of Engagement forbid the reverse direction (articles may link only to the
+  Marketplace), so this is the only way the two pages get associated.
+- `atlassianDocs`: support.atlassian.com pages for the native feature involved. Verify each URL
+  returns 200 before adding it; Atlassian moves support pages often (12 of 25 candidates were
+  dead when this was built).
+- Trust marks on every Atlassian product page link to Atlassian's own program pages (Runs on
+  Atlassian, Forge, the vendor page on the Marketplace, the app approval security workflow),
+  the way SaaSJet links Cloud Fortified and its partner tier. Text lozenges, not badge images:
+  the official badge files live in the Partner Portal and must not be modified, so use them
+  only as downloaded, if at all.
+- `FAQPage` JSON-LD on all 27 product pages, mirroring the on-page FAQ verbatim. Tempo has FAQs
+  with no schema; this is a gap we take.
+
+Product naming follows Atlassian's brand guidelines: the Atlassian product name comes after a
+preposition ("Attachment Cleanup for Confluence", never "Confluence Attachment Cleanup"), no
+"Atlassian" in the domain, title case for product names.

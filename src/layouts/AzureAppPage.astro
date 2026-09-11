@@ -3,7 +3,7 @@ import Base from './Base.astro';
 import type { AzureAppDetail } from '../data/azureAppDetails';
 import { azureBase } from '../data/azureApps';
 import { withUtm, track } from '../lib/links';
-import { asset, breadcrumbs, canonical, ORIGIN } from '../lib/seo';
+import { asset, breadcrumbs, canonical, ORIGIN, faq } from '../lib/seo';
 
 interface Props { app: AzureAppDetail; }
 const { app } = Astro.props;
@@ -36,6 +36,12 @@ const jsonLd = [
     publisher: { '@id': ORIGIN + '/#organization' },
     isAccessibleForFree: false,
   },
+  faq([
+    { q: 'Does any data leave my subscription?', a: 'No. The function runs in your subscription and writes only to your configured alert destination. Katabarwa Labs operates no backend and receives nothing.' },
+    { q: 'How is it billed?', a: (app.price ? `A flat USD ${app.price} per month` : 'A flat monthly fee') + ' on your Azure bill through the Marketplace, plus the small consumption cost of the function itself. No per-resource or per-user pricing.' },
+    { q: 'How do I remove it?', a: 'Delete the managed application from the Azure portal. Its resource group and identity go with it, and any role you granted can be removed the same way.' },
+    { q: 'Where do I get support?', a: 'support@llmgraph.ai, or the support page on katabarwalabs.dev.' },
+  ]),
 ];
 ---
 <Base title={`${app.title} | ${app.name} by Katabarwa Labs`} description={app.description} ogImage={shots[0]} ogType="product" jsonLd={jsonLd}>

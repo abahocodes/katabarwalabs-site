@@ -2,7 +2,7 @@
 import Base from './Base.astro';
 import type { AtlassianApp } from '../data/atlassianApps';
 import { withUtm, track } from '../lib/links';
-import { asset, breadcrumbs, softwareApp } from '../lib/seo';
+import { asset, breadcrumbs, softwareApp, faq, ATLASSIAN } from '../lib/seo';
 
 interface Props { app: AtlassianApp; }
 const { app } = Astro.props;
@@ -19,6 +19,17 @@ const docs = withUtm(app.docs, listingSlug, 'app-page-docs');
 const jsonLd = [
   breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Atlassian apps', path: '/atlassian' }, { name: app.name, path }]),
   softwareApp({ path, name: app.name, description: app.description, product: app.product, listing: app.listing, docs: app.docs, screenshots: shots, readOnly: !app.writes }),
+  faq([
+    { q: 'Does any data leave my instance?', a: 'No. The app runs on Atlassian Forge inside your own tenant with zero external egress, which makes it eligible for the Runs on Atlassian trust marker.' },
+    { q: 'How is it billed?', a: 'Through the Atlassian Marketplace, on your existing Atlassian bill, priced per user like any Cloud app. The listing has a free evaluation and the exact calculator for your tier.' },
+    { q: 'Where do I get support?', a: 'Email support@llmgraph.ai or open an issue from the documentation page. You talk directly to the people who build the app.' },
+  ]),
+];
+const trust = [
+  { label: 'Runs on Atlassian', href: ATLASSIAN.runsOnAtlassian, title: 'Atlassian program for apps with no external data egress' },
+  { label: 'Built on Forge', href: ATLASSIAN.forge, title: 'Atlassian Forge developer platform' },
+  { label: 'Atlassian Marketplace Partner', href: ATLASSIAN.vendorPage, title: 'Katabarwa Labs on the Atlassian Marketplace' },
+  { label: 'Marketplace security review', href: ATLASSIAN.securityWorkflow, title: 'Every app passes the Marketplace app approval security workflow' },
 ];
 ---
 <Base title={`${app.title} | ${app.name} by Katabarwa Labs`} description={app.description} ogImage={shots[0]} ogType="product" jsonLd={jsonLd}>
@@ -38,8 +49,27 @@ const jsonLd = [
         <a href={docs} target="_blank" rel="noopener" class="btn btn-ghost" {...track('atlassian', listingSlug, 'app-page-docs')}>Documentation</a>
       </div>
       <p class="mt-4 text-[13px] text-[#a9bce6]">Runs entirely on Atlassian Forge inside your own tenant. No external servers, no data egress.</p>
+      <ul class="mt-5 flex flex-wrap gap-2" aria-label="Trust marks">
+        {trust.map((t) => (
+          <li><a href={t.href} title={t.title} target="_blank" rel="noopener" class="inline-block rounded-full border border-white/25 px-3 py-1 text-[12.5px] font-semibold text-[#dfe8fb] hover:border-white hover:text-white">{t.label}</a></li>
+        ))}
+      </ul>
     </div>
   </section>
+
+  {app.origin && (
+    <section class="wrap pt-12">
+      <span class="eyebrow">Why it exists</span>
+      <p class="mt-3 max-w-[72ch] text-[17px] leading-relaxed text-ink2">
+        This app answers a request that has been open on Atlassian's public tracker for years:
+        <a class="font-semibold text-brand" href={`https://jira.atlassian.com/browse/${app.origin.ticket}`} target="_blank" rel="noopener">{app.origin.ticket}</a>,
+        "{app.origin.title}", with {app.origin.votes}.
+        {app.community && (
+          <> We wrote up the problem and the native workarounds on <a class="font-semibold text-brand" href={app.community} target="_blank" rel="noopener">Atlassian Community</a>.</>
+        )}
+      </p>
+    </section>
+  )}
 
   <!-- problem -->
   <section class="wrap pt-12">
@@ -94,7 +124,7 @@ const jsonLd = [
   <section class="wrap pt-12">
     <span class="eyebrow">Security &amp; permissions</span>
     <p class="mt-3 max-w-[72ch] text-[16px] text-ink2">
-      Built on Atlassian Forge: the app runs on Atlassian's own serverless platform inside your
+      Built on <a class="font-semibold text-brand" href={ATLASSIAN.forge} target="_blank" rel="noopener">Atlassian Forge</a>: the app runs on Atlassian's own serverless platform inside your
       tenant, stores its data in Forge storage, and makes no external network calls. Every scope it
       requests, and why:
     </p>
@@ -112,6 +142,16 @@ const jsonLd = [
     </div>
   </section>
 
+  {app.atlassianDocs && (
+    <section class="wrap pt-12">
+      <span class="eyebrow">The native feature it builds on</span>
+      <p class="mt-3 max-w-[72ch] text-[16px] text-ink2">Atlassian's own documentation for what {app.product} does out of the box, so you can see exactly where the gap is:</p>
+      <ul class="mt-3 max-w-[72ch] list-disc space-y-1.5 pl-6 text-[16px]">
+        {app.atlassianDocs.map((d) => <li><a class="font-semibold text-brand" href={d.url} target="_blank" rel="noopener">{d.label}</a> <span class="text-muted">(support.atlassian.com)</span></li>)}
+      </ul>
+    </section>
+  )}
+
   <!-- FAQ -->
   <section class="wrap pt-12">
     <span class="eyebrow">FAQ</span>
@@ -120,7 +160,7 @@ const jsonLd = [
         <h3 class="text-[16px] font-bold text-ink">Does any data leave my instance?</h3>
         <p class="mt-1 text-[16px] text-ink2">
           No. The app runs on Atlassian Forge inside your own tenant with zero external egress,
-          which makes it eligible for Atlassian's "Runs on Atlassian" trust marker.
+          which makes it eligible for Atlassian's <a class="font-semibold text-brand" href={ATLASSIAN.runsOnAtlassian} target="_blank" rel="noopener">Runs on Atlassian</a> trust marker.
         </p>
       </div>
       <div>

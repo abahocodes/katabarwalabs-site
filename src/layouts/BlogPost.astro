@@ -1,6 +1,7 @@
 ---
 import Base from './Base.astro';
 import { blogPosting, breadcrumbs, isoDate, asset } from '../lib/seo';
+import { bySlug } from '../data/atlassianApps';
 
 interface Props {
   title: string;        // SEO <title> and H1
@@ -10,8 +11,11 @@ interface Props {
   readMins?: number;
   image?: string;       // site-relative path under public/, used for og:image and BlogPosting.image
   community?: string;   // URL of the matching Atlassian Community App Central article, if one exists
+  app?: string;         // site slug of the Atlassian app this post is about; renders the references block
 }
-const { title, description, pubDate, tag = 'Azure', readMins, image, community } = Astro.props;
+const { title, description, pubDate, tag = 'Azure', readMins, image, community, app } = Astro.props;
+const rec = app ? bySlug[app] : undefined;
+const communityUrl = community ?? rec?.community;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const path = Astro.url.pathname.replace(base, '').replace(/\/$/, '') || '/';
 const published = isoDate(pubDate);
@@ -38,10 +42,20 @@ const jsonLd = [
   <main class="prose-page mx-auto max-w-[760px] px-6 pt-10 pb-[72px]">
     <slot />
 
-    {community && (
+    {rec && (
+      <aside class="mt-10 rounded-2xl border border-line bg-soft px-6 py-5">
+        <h2 class="text-[15px] font-bold uppercase tracking-[0.08em] text-ink">References</h2>
+        <ul class="mt-3 space-y-1.5 text-[15px] text-ink2">
+          {rec.origin && <li>The request on Atlassian's tracker: <a class="font-semibold text-brand" href={`https://jira.atlassian.com/browse/${rec.origin.ticket}`} target="_blank" rel="noopener">{rec.origin.ticket}</a>, {rec.origin.title} ({rec.origin.votes}).</li>}
+          {rec.atlassianDocs?.map((d) => <li>Atlassian documentation: <a class="font-semibold text-brand" href={d.url} target="_blank" rel="noopener">{d.label}</a>.</li>)}
+          <li>The app: <a class="font-semibold text-brand" href={`${base}/atlassian/${rec.slug}`}>{rec.name}</a>, and its <a class="font-semibold text-brand" href={rec.listing} target="_blank" rel="noopener">Atlassian Marketplace listing</a>.</li>
+        </ul>
+      </aside>
+    )}
+    {communityUrl && (
       <p class="mt-8 rounded-xl border border-line bg-soft px-5 py-4 text-[15px] text-ink2">
         A version of this piece also appears on Atlassian Community:
-        <a class="font-semibold text-brand" href={community} target="_blank" rel="noopener">read it on App Central</a>.
+        <a class="font-semibold text-brand" href={communityUrl} target="_blank" rel="noopener">read it on App Central</a>.
       </p>
     )}
     <hr class="my-10 border-line" />

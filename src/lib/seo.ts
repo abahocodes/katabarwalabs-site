@@ -141,3 +141,19 @@ export function isoDate(human: string): string {
   if (Number.isNaN(d.getTime())) throw new Error(`Unparseable pubDate: ${human}`);
   return d.toISOString().slice(0, 10);
 }
+
+export function faq(items: { q: string; a: string }[]) {
+  return {
+    '@type': 'FAQPage',
+    mainEntity: items.map((it) => ({ '@type': 'Question', name: it.q, acceptedAnswer: { '@type': 'Answer', text: it.a } })),
+  };
+}
+
+/** Atlassian program and platform pages that our trust marks link to. */
+export const ATLASSIAN = {
+  runsOnAtlassian: 'https://developer.atlassian.com/platform/marketplace/runs-on-atlassian/',
+  forge: 'https://developer.atlassian.com/platform/forge/',
+  partnerProgram: 'https://developer.atlassian.com/platform/marketplace/marketplace-partner-program/',
+  securityWorkflow: 'https://developer.atlassian.com/platform/marketplace/app-approval-security-workflow/',
+  vendorPage: 'https://marketplace.atlassian.com/vendors/524654952',
+};

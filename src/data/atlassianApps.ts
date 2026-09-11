@@ -19,6 +19,9 @@ export interface AtlassianApp {
   listing: string;
   docs: string;
   blog?: string;        // related blog post path, if one exists
+  origin?: { ticket: string; title: string; votes: string }; // the public Atlassian request this app answers
+  community?: string;   // our App Central article on community.atlassian.com, once live
+  atlassianDocs?: { label: string; url: string }[];  // Atlassian's own docs for the native feature involved
 }
 
 const docsBase = 'https://github.com/abahocodes/katabarwalabs-docs/blob/master/';
@@ -59,6 +62,12 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/3162504883/access-governance-reporter',
     docs: docsBase + 'access-governance-reporter.md',
     blog: '/blog/jira-group-usage-beyond-permission-schemes',
+    origin: { ticket: 'JRACLOUD-71967', title: 'Group usage: list of project permissions per group', votes: '1,002 votes' },
+    community: 'https://community.atlassian.com/forums/App-Central-articles/Before-you-delete-a-Jira-group-do-you-know-every-place-it-is/ba-p/3283832',
+    atlassianDocs: [
+      { label: 'Permission schemes in Jira Cloud', url: 'https://support.atlassian.com/jira-cloud-administration/docs/what-are-permission-schemes-in-jira/' },
+      { label: 'Manage groups', url: 'https://support.atlassian.com/user-management/docs/manage-groups/' },
+    ],
   },
   {
     slug: 'jira-access-snapshot-drift',
@@ -96,6 +105,10 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/3543425839/access-snapshot-drift',
     docs: docsBase + 'access-snapshot-drift.md',
     blog: '/blog/prove-who-had-jira-project-access-on-a-past-date',
+    atlassianDocs: [
+      { label: 'Audit activities in Jira', url: 'https://support.atlassian.com/jira-cloud-administration/docs/audit-activities-in-jira-applications/' },
+      { label: 'Permission schemes in Jira Cloud', url: 'https://support.atlassian.com/jira-cloud-administration/docs/what-are-permission-schemes-in-jira/' },
+    ],
   },
   {
     slug: 'jira-audit-log-retention',
@@ -132,6 +145,11 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/4152437534/compliance-log-vault',
     docs: docsBase + 'compliance-log-vault.md',
     blog: '/blog/keep-atlassian-audit-logs-beyond-retention',
+    origin: { ticket: 'JRACLOUD-68267', title: 'Jira audit log retention period needs to be increased', votes: '224 votes' },
+    atlassianDocs: [
+      { label: 'Audit activities in Jira', url: 'https://support.atlassian.com/jira-cloud-administration/docs/audit-activities-in-jira-applications/' },
+      { label: 'Monitor and audit activity in your organization', url: 'https://support.atlassian.com/security-and-access-policies/docs/monitor-and-audit-activity-in-your-organization/' },
+    ],
   },
   {
     slug: 'jira-inactive-user-hygiene',
@@ -168,6 +186,12 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/2720285106/inactive-user-hygiene',
     docs: docsBase + 'inactive-user-hygiene.md',
     blog: '/blog/find-inactive-jira-users-reclaim-licenses',
+    origin: { ticket: 'ID-8172', title: 'Bulk delete users', votes: '671 votes' },
+    community: 'https://community.atlassian.com/forums/App-Central-articles/How-many-Jira-seats-are-you-paying-for-that-nobody-has-touched/ba-p/3284300',
+    atlassianDocs: [
+      { label: 'Deactivate a managed account', url: 'https://support.atlassian.com/user-management/docs/deactivate-a-managed-account/' },
+      { label: 'Manage groups', url: 'https://support.atlassian.com/user-management/docs/manage-groups/' },
+    ],
   },
   {
     slug: 'jira-orphaned-owner-cleanup',
@@ -204,6 +228,11 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/2038592087/orphaned-owner-cleanup',
     docs: docsBase + 'orphaned-owner-cleanup.md',
     blog: '/blog/jira-filters-dashboards-deactivated-owners',
+    origin: { ticket: 'JRACLOUD-84210', title: 'When removing a user, change the ownership of filters and dashboards instead of moving them to trash', votes: '65 votes' },
+    community: 'https://community.atlassian.com/forums/App-Central-articles/Finding-and-reassigning-filters-dashboards-and-issues-owned-by/ba-p/3282307',
+    atlassianDocs: [
+      { label: 'Deactivate a managed account', url: 'https://support.atlassian.com/user-management/docs/deactivate-a-managed-account/' },
+    ],
   },
   {
     slug: 'jsm-portal-governance',
@@ -241,6 +270,11 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/1250207589/portal-governance-for-jsm',
     docs: docsBase + 'jsm-portal-governance.md',
     blog: '/blog/audit-jsm-portal-customer-access',
+    origin: { ticket: 'JSDCLOUD-6160', title: 'Ability to export users and organizations per project', votes: '407 votes' },
+    atlassianDocs: [
+      { label: 'Manage your customers and organizations', url: 'https://support.atlassian.com/jira-service-management-cloud/docs/manage-your-customers-and-organizations/' },
+      { label: 'Set up and manage portal access', url: 'https://support.atlassian.com/jira-service-management-cloud/docs/set-up-and-manage-portal-access/' },
+    ],
   },
   {
     slug: 'jsm-notification-log',
@@ -277,6 +311,12 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/966773862/notification-log-for-jsm',
     docs: docsBase + 'jsm-notification-log.md',
     blog: '/blog/jsm-outgoing-notification-log',
+    origin: { ticket: 'JSDCLOUD-4698', title: 'Provide an outgoing email log', votes: '1,490 votes' },
+    community: 'https://community.atlassian.com/forums/App-Central-articles/How-to-keep-a-record-of-every-outgoing-customer-notification-in/ba-p/3282850',
+    atlassianDocs: [
+      { label: 'View customer notification logs', url: 'https://support.atlassian.com/jira-service-management-cloud/docs/view-customer-notification-logs-for-your-service-project/' },
+      { label: 'Set up notifications for your customers and team', url: 'https://support.atlassian.com/jira-service-management-cloud/docs/set-up-notifications-for-your-customers-and-team/' },
+    ],
   },
   {
     slug: 'jsm-assets-export',
@@ -312,6 +352,11 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/3829199441/assets-export-manager-for-jira-service-management',
     docs: docsBase + 'jsm-assets-export.md',
     blog: '/blog/export-jsm-assets-object-schema',
+    origin: { ticket: 'JSDCLOUD-9967', title: 'Ability to export Assets data from an object schema', votes: '584 votes' },
+    atlassianDocs: [
+      { label: 'Export objects from Assets', url: 'https://support.atlassian.com/jira-service-management-cloud/docs/export-objects/' },
+      { label: 'Manage object schemas', url: 'https://support.atlassian.com/jira-service-management-cloud/docs/manage-object-schemas/' },
+    ],
   },
   {
     slug: 'confluence-attachment-cleanup',
@@ -347,6 +392,11 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/1397083709/attachment-cleanup-for-confluence',
     docs: docsBase + 'confluence-attachment-cleanup.md',
     blog: '/blog/confluence-attachment-cleanup-storage',
+    origin: { ticket: 'CONFCLOUD-16577', title: 'Detect unused attachments', votes: '291 votes' },
+    community: 'https://community.atlassian.com/forums/App-Central-articles/How-to-find-unused-and-orphaned-attachments-in-Confluence-Cloud/ba-p/3283273',
+    atlassianDocs: [
+      { label: 'Manage uploaded files', url: 'https://support.atlassian.com/confluence-cloud/docs/manage-uploaded-files/' },
+    ],
   },
   {
     slug: 'confluence-page-restriction-governance',
@@ -382,6 +432,11 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/511936964/page-restriction-governance',
     docs: docsBase + 'page-restriction-governance.md',
     blog: '/blog/confluence-restricted-pages-who-can-read-them',
+    origin: { ticket: 'CONFCLOUD-74405', title: 'List which spaces and restricted pages a group can access', votes: '122 votes' },
+    community: 'https://community.atlassian.com/forums/App-Central-articles/How-to-see-every-restricted-page-in-Confluence-Cloud-and-who-can/ba-p/3283284',
+    atlassianDocs: [
+      { label: 'Add or remove page restrictions', url: 'https://support.atlassian.com/confluence-cloud/docs/add-or-remove-page-restrictions/' },
+    ],
   },
   {
     slug: 'jira-project-export-backup',
@@ -421,6 +476,12 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/3373514803/project-export-backup',
     docs: docsBase + 'project-export-backup.md',
     blog: '/blog/export-and-back-up-a-single-jira-project',
+    origin: { ticket: 'JRACLOUD-34307', title: 'Single project export (offline backup, re-importable)', votes: '1,030 votes' },
+    atlassianDocs: [
+      { label: 'Archive a project', url: 'https://support.atlassian.com/jira-cloud-administration/docs/archive-a-project/' },
+      { label: 'Move a project to trash', url: 'https://support.atlassian.com/jira-cloud-administration/docs/move-a-project-to-trash/' },
+      { label: 'Export search results', url: 'https://support.atlassian.com/jira-software-cloud/docs/export-search-results/' },
+    ],
   },
 ];
 
