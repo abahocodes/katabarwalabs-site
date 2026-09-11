@@ -47,10 +47,20 @@ root (`SITE_BASE=/`), deploys `aws/cloudfront-site.yaml` (S3 + CloudFront/OAC + 
 records + a URL-rewrite function for Astro's `/privacy` `/support` routes), syncs `dist/` to the
 bucket, and invalidates the CDN. Result: **https://katabarwalabs.dev/**.
 
-## 3. Flip the listing URLs
+## 3. Continuous deployment from GitHub (since 2026-09-11)
 
-After the domain resolves, repoint the marketplace profiles/LISTINGs from the interim Pages URL to
-`https://katabarwalabs.dev/`, `/privacy`, `/support`, and retire the GitHub Pages workflow.
+Every push to `main` of `github.com/abahocodes/katabarwalabs-site` runs
+`.github/workflows/deploy.yml`: `npm ci` → `astro build` with `SITE_BASE=/` → `aws s3 sync --delete`
+to `katabarwalabs-site-520829456724` → CloudFront invalidation of `E3AZBNPWGP4PH1` → smoke test of
+`/` and `/sitemap.xml`. Auth is GitHub OIDC assuming IAM role `katabarwalabs-site-deploy`
+(trust: `repo:abahocodes/katabarwalabs-site:ref:refs/heads/main`; permissions: list/put/delete on
+that bucket, `cloudfront:CreateInvalidation` on that distribution, nothing else). No AWS keys in
+GitHub. The workflow only ships content; stack, certificate and DNS changes still go through
+`./aws/deploy.sh` from a workstation. The old GitHub Pages deployment was deleted the same day so
+`abahocodes.github.io/katabarwalabs-site` no longer serves a duplicate of the site.
+
+To ship: commit to `main` and push. Watch with `gh run watch` or the Actions tab; the production
+environment URL on the run is https://katabarwalabs.dev/.
 
 ## 4. Analytics and SEO conventions (added 2026-09-10)
 

@@ -1,34 +1,68 @@
-name: Deploy site to GitHub Pages
+name: Deploy katabarwalabs.dev
+
+# Every push to main builds the site and publishes it to the S3 bucket behind
+# the CloudFront distribution that serves https://katabarwalabs.dev, then
+# invalidates the cache. Auth is GitHub OIDC -> IAM role (no stored keys).
+# Infra changes (the CloudFormation stack, certificate, DNS) still run through
+# aws/deploy.sh from a workstation; this workflow only ships content.
 
 on:
   push:
-    branches: [master]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: deploy-site
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  AWS_ROLE_ARN: arn:aws:iam::520829456724:role/katabarwalabs-site-deploy
+  BUCKET: katabarwalabs-site-520829456724
+  DISTRIBUTION_ID: E3AZBNPWGP4PH1
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Build Astro site
-        uses: withastro/action@v3
-
   deploy:
-    needs: build
     runs-on: ubuntu-latest
     environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      name: production
+      url: https://katabarwalabs.dev/
     steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # sitemap lastmod comes from git history
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (root base)
+        run: npm run build
+        env:
+          SITE_BASE: /
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync dist/ to S3
+        run: aws s3 sync dist/ "s3://$BUCKET/" --delete
+
+      - name: Invalidate CloudFront
+        run: aws cloudfront create-invalidation --distribution-id "$DISTRIBUTION_ID" --paths '/*' --query Invalidation.Id --output text
+
+      - name: Smoke test
+        run: |
+          sleep 20
+          curl -sSf -o /dev/null -w 'home %{http_code}\n' https://katabarwalabs.dev/
+          curl -sSf https://katabarwalabs.dev/sitemap.xml | grep -c '<loc>'
