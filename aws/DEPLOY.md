@@ -114,3 +114,11 @@ templates.
 Product naming follows Atlassian's brand guidelines: the Atlassian product name comes after a
 preposition ("Attachment Cleanup for Confluence", never "Confluence Attachment Cleanup"), no
 "Atlassian" in the domain, title case for product names.
+
+**Listing backlinks.** Each public Atlassian listing's "Support ticketing system" link points at
+`/atlassian/<slug>#support` (the product page's FAQ section carries `id="support"`), and "Track work
+items" points at the docs repo issues. That is the sanctioned chain from Atlassian properties to
+this site: Community article → listing → product page. Keep the `#support` anchor when editing
+`AppPage.astro`. Every post is bylined with a link to the author's Community profile and carries a
+`Person` author node; comparison posts follow the "X apps compared" pattern with data from the
+public Marketplace API and a vendor disclosure in the first sentence.
