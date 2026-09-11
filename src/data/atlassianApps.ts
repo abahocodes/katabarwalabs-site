@@ -379,6 +379,44 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/511936964/page-restriction-governance',
     docs: docsBase + 'page-restriction-governance.md',
   },
+  {
+    slug: 'jira-project-export-backup',
+    name: 'Project Export & Backup',
+    product: 'Jira',
+    title: 'Export a whole Jira project to CSV or JSON, then archive or trash it',
+    tagline: 'The per-project export Jira Cloud never shipped: every issue with fields, comments, changelog, links, and worklogs, then an optional, heavily guarded decommission. Runs entirely on Atlassian.',
+    description: 'Jira Cloud has no per-project export. Project Export & Backup pages a whole project into audit-ready CSV or re-import-friendly JSON inside your own tenant, records every export, and can archive or trash the project only after a verified backup.',
+    problem: '"Export a single project" is one of the longest-standing asks on the Jira Cloud tracker (JRACLOUD-34307, over 1,000 votes). Jira can export a filtered issue search to CSV, but there is no one-click backup of a whole project with its fields, comments, changelog, links, and worklogs together. Migrations, compliance evidence, and clean decommissions all start with that missing file.',
+    features: [
+      'Pick any project you can read, choose CSV (one row per issue) or JSON (structured, re-import friendly), and download straight from your browser.',
+      'Captures core and custom fields, comments, worklogs, changelog size, issue links, and attachments as URLs with metadata.',
+      'Every export ships with a manifest: project, issue count, generated timestamp, exported field list, and a truncation flag.',
+      'Rolling export history, so you can see what was backed up and when.',
+      'Optional decommission: archive (Jira Premium) or trash the project, only after a complete export from the last 7 days.',
+      'Generated on Atlassian Forge and streamed to the browser in chunks; no vendor backend touches the data.',
+    ],
+    captions: [
+      'Export history: every project backed up, its format, issue count, status, and whether it was truncated.',
+      'One row per issue with all fields, comment counts, and attachment links, or a structured JSON archive.',
+      'The export run: paged on Atlassian, chunked under Forge limits, streamed to your browser.',
+    ],
+    honest: [
+      'Attachments are exported as URLs and metadata, not binary files. This is an issue, comment, and changelog export, not a file archive.',
+      'Each export is bounded to a maximum number of issues per run. A larger project is exported up to the cap and flagged as truncated, so you always know exactly what you got.',
+      'Archiving a project requires Jira Premium or Enterprise; on other plans an archive run is skipped with a clear reason. Trash is recoverable for 60 days, after which Jira deletes the project permanently.',
+    ],
+    scopes: [
+      { scope: 'read:jira-work', why: 'issues, comments, worklogs, changelog, and links for the export' },
+      { scope: 'read:jira-user', why: 'assignee and reporter names in the export' },
+      { scope: 'storage:app', why: 'export history, in-flight status, and the temporary export blob, in your tenant' },
+      { scope: 'manage:jira-project', why: 'the opt-in archive action, nothing else' },
+      { scope: 'manage:jira-configuration', why: 'the opt-in trash action, nothing else' },
+    ],
+    writes: 'Archive or trash a project, one per run, never in bulk. Preview is the default and changes nothing. It requires a complete export from the last 7 days, an explicit choice of archive versus trash, typing the project key to confirm, and a live re-check that the project has not gained issues since the backup. Every run ends as done, skipped with a reason, or failed, and the outcome is recorded against the export that justified it.',
+    youtube: null,
+    listing: 'https://marketplace.atlassian.com/apps/3373514803/project-export-backup',
+    docs: docsBase + 'project-export-backup.md',
+  },
 ];
 
 export const bySlug = Object.fromEntries(atlassianApps.map((a) => [a.slug, a]));
