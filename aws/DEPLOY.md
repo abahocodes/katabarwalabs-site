@@ -53,8 +53,10 @@ Every push to `main` of `github.com/abahocodes/katabarwalabs-site` runs
 `.github/workflows/deploy.yml`: `npm ci` → `astro build` with `SITE_BASE=/` → `aws s3 sync --delete`
 to `katabarwalabs-site-520829456724` → CloudFront invalidation of `E3AZBNPWGP4PH1` → smoke test of
 `/` and `/sitemap.xml`. Auth is GitHub OIDC assuming IAM role `katabarwalabs-site-deploy`
-(trust: `repo:abahocodes/katabarwalabs-site:ref:refs/heads/main`; permissions: list/put/delete on
-that bucket, `cloudfront:CreateInvalidation` on that distribution, nothing else). No AWS keys in
+(trust: the repo has GitHub's immutable OIDC subject on, so the `sub` claim is
+`repo:abahocodes@7064538/katabarwalabs-site@1327457696:environment:production` and the trust
+policy matches that prefix for the `production` environment and `ref:refs/heads/main`; permissions:
+list/put/delete on that bucket, `cloudfront:CreateInvalidation` on that distribution, nothing else). No AWS keys in
 GitHub. The workflow only ships content; stack, certificate and DNS changes still go through
 `./aws/deploy.sh` from a workstation. The old GitHub Pages deployment was deleted the same day so
 `abahocodes.github.io/katabarwalabs-site` no longer serves a duplicate of the site.
