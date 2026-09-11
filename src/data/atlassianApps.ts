@@ -413,7 +413,7 @@ export const atlassianApps: AtlassianApp[] = [
       { scope: 'manage:jira-configuration', why: 'the opt-in trash action, nothing else' },
     ],
     writes: 'Archive or trash a project, one per run, never in bulk. Preview is the default and changes nothing. It requires a complete export from the last 7 days, an explicit choice of archive versus trash, typing the project key to confirm, and a live re-check that the project has not gained issues since the backup. Every run ends as done, skipped with a reason, or failed, and the outcome is recorded against the export that justified it.',
-    youtube: null,
+    youtube: 'WTDIIPXJP5c',
     listing: 'https://marketplace.atlassian.com/apps/3373514803/project-export-backup',
     docs: docsBase + 'project-export-backup.md',
   },
