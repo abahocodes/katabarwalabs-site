@@ -1,0 +1,90 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'inactive-user-hygiene';
+const listing = withUtm('https://marketplace.atlassian.com/apps/2720285106/inactive-user-hygiene', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+const rows = [
+  ['User Management for Jira (bulk and timed inactive users)', 'TechTime Initiative Group', '4.8 (25 reviews)', 'USD 1,000', 'Bulk and scheduled deactivation from Jira, also for Data Center', 'https://marketplace.atlassian.com/apps/1213211/user-management-for-jira'],
+  ['User Management for Jira and Auto-deactivation', 'miniOrange', '5.0 (8 reviews)', 'USD 850', 'Scheduler that deactivates inactive users automatically', 'https://marketplace.atlassian.com/search?query=User%20Management%20for%20Jira%20%26%20Auto-deactivation'],
+  ['Flexible User License', 'OSCi', '4.8 (22 reviews)', 'USD 1,000', 'Automatically excludes inactive users from licensed groups', 'https://marketplace.atlassian.com/search?query=Flexible%20User%20License'],
+  ['User/Group Export and License Optimizer', 'Aety admin apps', '4.9 (18 reviews)', 'USD 1,000', 'User and group export with license optimisation views', 'https://marketplace.atlassian.com/search?query=User%2FGroup%20Export%20%26%20License%20Optimizer'],
+  ['User Management and License Optimizer', 'resolution', '4.4 (9 reviews)', 'USD 1,000', 'Find and deactivate inactive users across Jira and Confluence', 'https://marketplace.atlassian.com/search?query=User%20Management%20and%20License%20Optimizer'],
+  ['Inactive-User Hygiene', 'Katabarwa Labs', 'new listing', 'USD 1,500', 'Read-only idle worklist from Jira activity; opt-in removal; Runs on Atlassian', 'https://marketplace.atlassian.com/apps/2720285106/inactive-user-hygiene'],
+];
+---
+<BlogPost
+  title="Jira inactive user apps compared: six Marketplace options for reclaiming licenses"
+  description="An honest comparison of the Atlassian Marketplace apps that find inactive Jira users and reclaim licenses: what each measures, whether it deactivates for you, what it needs, and list price at 100 users, with the native route and where Inactive-User Hygiene fits."
+  tag="Jira administration"
+  pubDate="September 10, 2026"
+  readMins={7}
+  image="/apps/jira-inactive-user-hygiene/h1.png"
+  app="jira-inactive-user-hygiene"
+>
+  <p>
+    Disclosure first: we build one of the apps below, Inactive-User Hygiene, so read this as a
+    vendor's comparison and check the listings yourself. Every fact here comes from the public
+    Marketplace listing pages as of September 2026, and the price column is the listed annual price
+    at the 100-user tier, which is where most instances land. Prices change; the listing is the
+    source of truth.
+  </p>
+
+  <h2>What the native route gives you</h2>
+  <p>
+    Before any app: the org directory export at admin.atlassian.com has a "last seen" column, and
+    deactivating an account there is the only action that frees a license seat. That is worth doing
+    once regardless of what you buy. Its limits are that "last seen" is org-wide rather than
+    Jira-specific, and it is a manual sweep. Atlassian's own docs:
+    <a class="text-brand" href="https://support.atlassian.com/user-management/docs/deactivate-a-managed-account/" target="_blank" rel="noopener">deactivate a managed account</a>.
+  </p>
+
+  <h2>The apps, side by side</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-[14.5px]">
+      <thead><tr class="border-b border-line text-left text-muted"><th class="py-2 pr-3">App</th><th class="py-2 pr-3">Vendor</th><th class="py-2 pr-3">Rating</th><th class="py-2 pr-3">List price, 100 users, per year</th><th class="py-2">What it does</th></tr></thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr class="border-b border-line align-top">
+            <td class="py-2 pr-3 font-semibold"><a class="text-brand" href={r[5]} target="_blank" rel="noopener">{r[0]}</a></td>
+            <td class="py-2 pr-3">{r[1]}</td><td class="py-2 pr-3">{r[2]}</td><td class="py-2 pr-3">{r[3]}</td><td class="py-2">{r[4]}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>The questions that actually separate them</h2>
+  <ul>
+    <li><strong>What counts as inactive?</strong> Most apps use last login. Inactive-User Hygiene uses
+      last Jira activity from issue history instead, because a user who logs in for Confluence still
+      holds an idle Jira seat. Neither is wrong; know which one you are measuring.</li>
+    <li><strong>Does it deactivate for you?</strong> TechTime, miniOrange, OSCi, and resolution all
+      automate deactivation or license-group removal on a schedule. Inactive-User Hygiene is
+      report-first: the worklist is the product, and the only write is an opt-in, previewed removal
+      of the users you confirm. If you want hands-off automation, pick one of the first group.</li>
+    <li><strong>Where does the data go?</strong> Inactive-User Hygiene is a Forge app with no external
+      egress, eligible for Atlassian's Runs on Atlassian marker. Check each other listing's Privacy
+      and Security tab for where it processes user data; several run on Connect with a vendor backend.</li>
+    <li><strong>Data Center too?</strong> TechTime and resolution cover Data Center. Ours is Cloud only.</li>
+    <li><strong>Price at scale.</strong> Tiers diverge sharply above 500 users. Run your exact user
+      count through each listing's calculator before comparing anything else.</li>
+  </ul>
+
+  <h2>Where Inactive-User Hygiene fits</h2>
+  <div class="callout">
+    <strong>Our tool:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Inactive-User Hygiene</a>
+    on the Atlassian Marketplace, and the <a class="text-brand font-semibold" href={`${base}/atlassian/jira-inactive-user-hygiene`}>product page</a>.
+  </div>
+  <p>
+    Choose it when you want a defensible list before anyone touches an account, measured on Jira
+    activity rather than login, with the data never leaving your tenant. Choose one of the
+    automation-first apps when your policy is settled and you want deactivation to just happen.
+  </p>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/find-inactive-jira-users-reclaim-licenses`}>How to find inactive Jira users and reclaim their licenses</a>.
+  </p>
+</BlogPost>

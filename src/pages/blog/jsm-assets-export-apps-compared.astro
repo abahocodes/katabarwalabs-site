@@ -1,0 +1,76 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'assets-export-manager-for-jira-service-management';
+const listing = withUtm('https://marketplace.atlassian.com/apps/3829199441/assets-export-manager-for-jira-service-management', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+const rows = [
+  ['Insight Assets Backup & Migration', 'Twinit', '4.9 (30 reviews)', 'USD 1,520', 'Backup, restore, and migration of schemas, objects, and attachments', 'https://marketplace.atlassian.com/search?query=Insight%20Assets%20Backup%20%26%20Migration'],
+  ['Assets Attachments Backup & Migration', 'Twinit', '5.0 (1 review)', 'see listing', 'Attachment-focused companion to the above', 'https://marketplace.atlassian.com/search?query=Assets%20Attachments%20Backup'],
+  ['Assets Export Manager for JSM', 'Katabarwa Labs', 'new listing', 'USD 850', 'Whole-schema export to CSV or JSON, generated in-tenant and streamed to the browser; Runs on Atlassian', 'https://marketplace.atlassian.com/apps/3829199441/assets-export-manager-for-jira-service-management'],
+];
+---
+<BlogPost
+  title="JSM Assets export and backup apps compared: whole-schema export versus backup and restore"
+  description="Twinit's Insight Assets Backup & Migration and Assets Export Manager compared on what they cover, whether they can restore, where the data goes, and list price at 100 users, next to the native per-object-type export."
+  tag="Jira Service Management"
+  pubDate="September 10, 2026"
+  readMins={6}
+  image="/apps/jsm-assets-export/h1.png"
+  app="jsm-assets-export"
+>
+  <p>
+    Disclosure first: Assets Export Manager is ours. Facts are from the public Marketplace listings as
+    of September 2026, prices at the 100-user tier. The native starting point is Atlassian's own
+    <a class="text-brand" href="https://support.atlassian.com/jira-service-management-cloud/docs/export-objects/" target="_blank" rel="noopener">export objects</a>
+    feature, which exports one object type at a time to CSV; the request for a whole-schema export,
+    <a class="text-brand" href="https://jira.atlassian.com/browse/JSDCLOUD-9967" target="_blank" rel="noopener">JSDCLOUD-9967</a>, has hundreds of votes.
+  </p>
+
+  <h2>Export versus backup</h2>
+  <ul>
+    <li><strong>Backup and restore.</strong> Twinit's products copy schemas, objects, and attachments so
+      you can restore or migrate them, including into another site. That is the job if you need to
+      recover from a bad bulk edit or move a CMDB between instances.</li>
+    <li><strong>A portable copy of the whole schema.</strong> Every object type and attribute in one
+      CSV or JSON, for an auditor, a migration baseline, or offline analysis. Assets Export Manager
+      does exactly that and nothing else: it pages the schema in your tenant and streams the file to
+      your browser. It cannot restore, and it does not export attachment binaries.</li>
+  </ul>
+
+  <h2>The apps, side by side</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-[14.5px]">
+      <thead><tr class="border-b border-line text-left text-muted"><th class="py-2 pr-3">App</th><th class="py-2 pr-3">Vendor</th><th class="py-2 pr-3">Rating</th><th class="py-2 pr-3">List price, 100 users, per year</th><th class="py-2">What it does</th></tr></thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr class="border-b border-line align-top">
+            <td class="py-2 pr-3 font-semibold"><a class="text-brand" href={r[5]} target="_blank" rel="noopener">{r[0]}</a></td>
+            <td class="py-2 pr-3">{r[1]}</td><td class="py-2 pr-3">{r[2]}</td><td class="py-2 pr-3">{r[3]}</td><td class="py-2">{r[4]}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>How to choose</h2>
+  <ul>
+    <li><strong>You might need to put objects back.</strong> Backup and restore, full stop.</li>
+    <li><strong>You need the register out, whole, on demand.</strong> A whole-schema export. Ours is
+      bounded per run and marks a truncated export honestly rather than silently cutting it.</li>
+    <li><strong>Assets pricing is per Jira user, not per agent.</strong> Every app in this category is
+      billed on the Jira user tier of the whole instance, which is Atlassian's model rather than any
+      vendor's. Run your real user count through the calculators.</li>
+  </ul>
+
+  <div class="callout">
+    <strong>Our tool:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Assets Export Manager for JSM</a>
+    on the Atlassian Marketplace, and the <a class="text-brand font-semibold" href={`${base}/atlassian/jsm-assets-export`}>product page</a>.
+  </div>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/export-jsm-assets-object-schema`}>How to bulk-export a JSM Assets object schema (CSV or JSON)</a>.
+  </p>
+</BlogPost>

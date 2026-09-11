@@ -1,0 +1,91 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'project-export-backup';
+const listing = withUtm('https://marketplace.atlassian.com/apps/3373514803/project-export-backup', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+const rows = [
+  ['Rewind Backups for Jira', 'Rewind', '4.8 (73 reviews)', 'USD 4,000', 'Automated daily site backups with restore, vendor-hosted', 'https://marketplace.atlassian.com/apps/1227706/rewind-backups-for-jira'],
+  ['Revyz Command Center for Jira', 'Revyz', '5.0 (19 reviews)', 'USD 3,200', 'Backup, configuration restore, and compliance platform, vendor-hosted', 'https://marketplace.atlassian.com/search?query=Revyz%20Command%20Center'],
+  ['ProBackup for Jira', 'ProBackup', '3.1 (6 reviews)', 'USD 2,800', 'Daily snapshot of Jira data to vendor storage', 'https://marketplace.atlassian.com/search?query=ProBackup%20for%20Jira'],
+  ['Backup Projects for Jira', 'ELFAPP Technologies', '1.3 (1 review)', 'USD 400', 'Per-project backup', 'https://marketplace.atlassian.com/search?query=Backup%20Projects%20for%20Jira'],
+  ['Project Export & Backup', 'Katabarwa Labs', 'new listing', 'USD 1,750', 'Per-project CSV or JSON export in-tenant, then guarded archive or trash; Runs on Atlassian', 'https://marketplace.atlassian.com/apps/3373514803/project-export-backup'],
+];
+---
+<BlogPost
+  title="Jira backup and project export apps compared: whole-site backup versus per-project export"
+  description="Rewind, Revyz, ProBackup, ELFAPP, and Project Export & Backup side by side: continuous whole-site backup with restore versus a portable per-project export you can hand to a team, where the data lives, and list price at 100 users."
+  tag="Jira administration"
+  pubDate="September 10, 2026"
+  readMins={7}
+  image="/apps/jira-project-export-backup/h1.png"
+  app="jira-project-export-backup"
+>
+  <p>
+    Disclosure first: we build Project Export &amp; Backup, so treat this as a vendor's comparison and
+    verify against the listings. All facts are from public Marketplace listing pages as of September
+    2026; prices are the listed annual price at 100 users. Two different jobs hide under the word
+    "backup", and the apps split cleanly along that line.
+  </p>
+
+  <h2>Two jobs, not one</h2>
+  <ul>
+    <li><strong>Disaster recovery.</strong> Continuous backup of the whole site with the ability to
+      restore issues, projects, or configuration after a mistake. Rewind, Revyz, and ProBackup are
+      built for this. The data is copied to the vendor's storage, which is what makes restore
+      possible and also what your security review will ask about.</li>
+    <li><strong>A portable record of one project.</strong> Export everything a project contains,
+      fields, comments, changelog, links, worklogs, into a file a team or an auditor can keep, then
+      retire the project. Project Export &amp; Backup and, on paper, Backup Projects for Jira are
+      built for this. Nothing is copied anywhere except to your browser.</li>
+  </ul>
+  <p>
+    Jira's native answer to the first job is the site backup; to the second it is a filtered CSV
+    export, which drops comments and history. Atlassian's docs:
+    <a class="text-brand" href="https://support.atlassian.com/jira-software-cloud/docs/export-search-results/" target="_blank" rel="noopener">export search results</a>,
+    <a class="text-brand" href="https://support.atlassian.com/jira-cloud-administration/docs/archive-a-project/" target="_blank" rel="noopener">archive a project</a>,
+    <a class="text-brand" href="https://support.atlassian.com/jira-cloud-administration/docs/move-a-project-to-trash/" target="_blank" rel="noopener">move a project to trash</a>.
+  </p>
+
+  <h2>The apps, side by side</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-[14.5px]">
+      <thead><tr class="border-b border-line text-left text-muted"><th class="py-2 pr-3">App</th><th class="py-2 pr-3">Vendor</th><th class="py-2 pr-3">Rating</th><th class="py-2 pr-3">List price, 100 users, per year</th><th class="py-2">What it does</th></tr></thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr class="border-b border-line align-top">
+            <td class="py-2 pr-3 font-semibold"><a class="text-brand" href={r[5]} target="_blank" rel="noopener">{r[0]}</a></td>
+            <td class="py-2 pr-3">{r[1]}</td><td class="py-2 pr-3">{r[2]}</td><td class="py-2 pr-3">{r[3]}</td><td class="py-2">{r[4]}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>How to choose</h2>
+  <ul>
+    <li><strong>You need restore.</strong> Buy a disaster-recovery product. A per-project export cannot
+      put an issue back; it is evidence and portability, not recovery.</li>
+    <li><strong>You need to decommission projects with an audit trail.</strong> A per-project export
+      with a manifest, followed by archive or trash, is the whole workflow. Project Export &amp;
+      Backup ties the two together: it will only offer to retire a project that has a complete
+      export from the last seven days, and it re-checks the live issue count before acting.</li>
+    <li><strong>Your security review asks where the data goes.</strong> Vendor-hosted backup means a
+      copy of your Jira lives with the vendor; read each listing's Privacy and Security tab. Project
+      Export &amp; Backup is a Forge app with no external egress.</li>
+    <li><strong>Attachments.</strong> Disaster-recovery products generally back up attachment
+      binaries. Project Export &amp; Backup exports attachment URLs and metadata, not the files, and
+      says so.</li>
+  </ul>
+
+  <div class="callout">
+    <strong>Our tool:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Project Export &amp; Backup</a>
+    on the Atlassian Marketplace, and the <a class="text-brand font-semibold" href={`${base}/atlassian/jira-project-export-backup`}>product page</a>.
+  </div>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/export-and-back-up-a-single-jira-project`}>How to export and back up a single Jira Cloud project before you decommission it</a>.
+  </p>
+</BlogPost>

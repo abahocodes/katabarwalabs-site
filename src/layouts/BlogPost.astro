@@ -1,6 +1,6 @@
 ---
 import Base from './Base.astro';
-import { blogPosting, breadcrumbs, isoDate, asset } from '../lib/seo';
+import { blogPosting, breadcrumbs, isoDate, asset, person, AUTHOR } from '../lib/seo';
 import { bySlug } from '../data/atlassianApps';
 
 interface Props {
@@ -21,7 +21,8 @@ const path = Astro.url.pathname.replace(base, '').replace(/\/$/, '') || '/';
 const published = isoDate(pubDate);
 const jsonLd = [
   breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: title, path }]),
-  blogPosting({ path, title, description, isoDate: published, tag, image: image ? asset(image) : undefined }),
+  person(),
+  blogPosting({ path, title, description, isoDate: published, tag, image: image ? asset(image) : undefined, byPerson: true }),
 ];
 ---
 <Base title={`${title} | Katabarwa Labs`} description={description} ogType="article" publishedTime={published} jsonLd={jsonLd} ogImage={image ? asset(image) : undefined}>
@@ -35,6 +36,9 @@ const jsonLd = [
       </h1>
       <p class="mt-3 text-[14px] text-[#a9bce6]">
         {tag} · {pubDate}{readMins ? ` · ${readMins} min read` : ''}
+      </p>
+      <p class="mt-2 text-[14px] text-[#c8d6f7]">
+        By <a href={AUTHOR.community} target="_blank" rel="noopener author" class="font-semibold text-white hover:underline">{AUTHOR.name}</a>, {AUTHOR.role}
       </p>
     </div>
   </section>
@@ -60,7 +64,7 @@ const jsonLd = [
     )}
     <hr class="my-10 border-line" />
     <p class="text-[14px] text-muted">
-      Written by the team at <a class="text-brand" href={`${base}/`}>Katabarwa Labs</a>.
+      Written by <a class="text-brand" href={AUTHOR.community} target="_blank" rel="noopener author">{AUTHOR.name}</a> at <a class="text-brand" href={`${base}/`}>Katabarwa Labs</a>.
       We build small, single-purpose Atlassian and Azure tools that run entirely inside your own tenant.
       Questions: <a class="text-brand" href="mailto:support@llmgraph.ai">support@llmgraph.ai</a>.
     </p>

@@ -116,7 +116,7 @@ export function softwareApp(opts: {
   };
 }
 
-export function blogPosting(opts: { path: string; title: string; description: string; isoDate: string; image?: string; tag?: string }) {
+export function blogPosting(opts: { path: string; title: string; description: string; isoDate: string; image?: string; tag?: string; byPerson?: boolean }) {
   return {
     '@type': 'BlogPosting',
     '@id': canonical(opts.path) + '#article',
@@ -129,7 +129,7 @@ export function blogPosting(opts: { path: string; title: string; description: st
     inLanguage: 'en',
     articleSection: opts.tag,
     image: opts.image ? [opts.image] : undefined,
-    author: { '@id': ORIGIN + '/#organization' },
+    author: { '@id': opts.byPerson ? ORIGIN + '/#author' : ORIGIN + '/#organization' },
     publisher: { '@id': ORIGIN + '/#organization' },
     isPartOf: { '@id': ORIGIN + '/#website' },
   };
@@ -157,3 +157,22 @@ export const ATLASSIAN = {
   securityWorkflow: 'https://developer.atlassian.com/platform/marketplace/app-approval-security-workflow/',
   vendorPage: 'https://marketplace.atlassian.com/vendors/524654952',
 };
+
+export const AUTHOR = {
+  name: 'Abaho Katabarwa',
+  role: 'Founder, Katabarwa Labs',
+  community: 'https://community.atlassian.com/user/connect/forums/6268139',
+  github: 'https://github.com/abahocodes',
+};
+
+export function person() {
+  return {
+    '@type': 'Person',
+    '@id': ORIGIN + '/#author',
+    name: AUTHOR.name,
+    jobTitle: AUTHOR.role,
+    worksFor: { '@id': ORIGIN + '/#organization' },
+    url: ORIGIN + '/',
+    sameAs: [AUTHOR.community, AUTHOR.github],
+  };
+}

@@ -1,0 +1,83 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'compliance-log-vault';
+const listing = withUtm('https://marketplace.atlassian.com/apps/4152437534/compliance-log-vault', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+const rows = [
+  ['User Activity Audit Log', 'Twinit', '5.0 (5 reviews)', 'USD 1,600', 'Tracks user activity and work item views, restores deleted items', 'https://marketplace.atlassian.com/search?query=User%20Activity%20Audit%20Log'],
+  ['Advanced Audit Log for Jira', 'SaaSJet Studios', 'no reviews yet', 'USD 400', 'Captures configuration change history', 'https://marketplace.atlassian.com/search?query=Advanced%20Audit%20Log%20for%20Jira'],
+  ['Compliance Log Vault', 'Katabarwa Labs', 'new listing', 'USD 1,200', 'Retains the native Jira audit log past 180 days, CSV export, read-only; Runs on Atlassian', 'https://marketplace.atlassian.com/apps/4152437534/compliance-log-vault'],
+];
+---
+<BlogPost
+  title="Jira audit log apps compared: retention, activity tracking, and configuration history"
+  description="Three different things get called an audit log app. This compares Twinit's User Activity Audit Log, SaaSJet's Advanced Audit Log, and Compliance Log Vault on what they record, how long they keep it, where it lives, and list price at 100 users, next to Jira's native audit log."
+  tag="Atlassian compliance"
+  pubDate="September 10, 2026"
+  readMins={6}
+  image="/apps/jira-audit-log-retention/h1.png"
+  app="jira-audit-log-retention"
+>
+  <p>
+    Disclosure first: Compliance Log Vault is ours. Facts below are from the public Marketplace
+    listings as of September 2026, with prices at the 100-user tier. The useful thing to know
+    before comparing is that "audit log" means three different products on the Marketplace.
+  </p>
+
+  <h2>Three different jobs</h2>
+  <ul>
+    <li><strong>Keep the native audit log longer.</strong> Jira Cloud's own audit log records admin
+      and security events but ages out after roughly 180 days
+      (<a class="text-brand" href="https://support.atlassian.com/jira-cloud-administration/docs/audit-activities-in-jira-applications/" target="_blank" rel="noopener">Atlassian's docs</a>).
+      Compliance Log Vault copies those records into your tenant daily so the trail survives past the
+      cap. It records nothing new; it retains what Jira already logged.</li>
+    <li><strong>Track user activity Jira never logs.</strong> Who viewed which work item, who did
+      what, with restore of deleted items. Twinit's User Activity Audit Log is this. It is a
+      different data set, and a much larger one.</li>
+    <li><strong>Configuration change history.</strong> Which admin changed which scheme, field, or
+      workflow. SaaSJet's Advanced Audit Log targets this.</li>
+  </ul>
+
+  <h2>The apps, side by side</h2>
+  <div class="overflow-x-auto">
+    <table class="w-full text-[14.5px]">
+      <thead><tr class="border-b border-line text-left text-muted"><th class="py-2 pr-3">App</th><th class="py-2 pr-3">Vendor</th><th class="py-2 pr-3">Rating</th><th class="py-2 pr-3">List price, 100 users, per year</th><th class="py-2">What it records</th></tr></thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr class="border-b border-line align-top">
+            <td class="py-2 pr-3 font-semibold"><a class="text-brand" href={r[5]} target="_blank" rel="noopener">{r[0]}</a></td>
+            <td class="py-2 pr-3">{r[1]}</td><td class="py-2 pr-3">{r[2]}</td><td class="py-2 pr-3">{r[3]}</td><td class="py-2">{r[4]}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>How to choose</h2>
+  <ul>
+    <li><strong>An auditor asked for twelve months of the audit log.</strong> You need retention of
+      the native log, nothing more. That is the narrow job Compliance Log Vault does, with read-only
+      scopes and one-click CSV.</li>
+    <li><strong>Someone asked "who looked at this ticket?"</strong> The native log never had that.
+      You need an activity tracker, and you should expect it to store a lot of data somewhere; read
+      the Privacy and Security tab for where.</li>
+    <li><strong>Configuration drift is the problem.</strong> Look at the configuration-history
+      products, and also at Atlassian's organization-level audit log, which covers more admin
+      actions than the Jira one
+      (<a class="text-brand" href="https://support.atlassian.com/security-and-access-policies/docs/monitor-and-audit-activity-in-your-organization/" target="_blank" rel="noopener">docs</a>).</li>
+  </ul>
+
+  <div class="callout">
+    <strong>Our tool:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Compliance Log Vault</a>
+    on the Atlassian Marketplace, and the <a class="text-brand font-semibold" href={`${base}/atlassian/jira-audit-log-retention`}>product page</a>.
+  </div>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/keep-atlassian-audit-logs-beyond-retention`}>How to keep Jira audit logs past the retention window</a>
+    and
+    <a class="text-brand" href={`${base}/blog/prove-who-had-jira-project-access-on-a-past-date`}>how to prove who could access a Jira project on a past date</a>.
+  </p>
+</BlogPost>
