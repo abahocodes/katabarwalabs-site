@@ -8,9 +8,11 @@ Run by .github/workflows/deploy.yml after the CloudFront invalidation.
    code (layouts, data, lib, config), submits every URL in the live sitemap.
    Key: the public/<key>.txt file committed in the repo. No secret needed.
 
-2. Google Search Console (optional, needs GSC_SERVICE_ACCOUNT_JSON): resubmits
-   the sitemap, then runs URL Inspection on the changed URLs and writes their
-   index state to the GitHub step summary. Google has no supported "index this
+2. Google Search Console (optional, needs GSC_ACCESS_TOKEN from the keyless
+   google-github-actions/auth step: GitHub OIDC -> GCP workload identity pool
+   -> service account gsc-ci, a user on the property): resubmits the sitemap,
+   then runs URL Inspection on the changed URLs and writes their index state
+   to the GitHub step summary. Google has no supported "index this
    page" call for ordinary pages (the Indexing API is job postings and live
    streams only) and the sitemap ping endpoint was retired in 2023, so this is
    the whole of what can be automated on the Google side.
@@ -19,7 +21,7 @@ Environment:
   SITE               https://katabarwalabs.dev
   BEFORE_SHA/AFTER_SHA   commit range of the push ("" on workflow_dispatch)
   EVENT_NAME         push | workflow_dispatch
-  GSC_SERVICE_ACCOUNT_JSON   service-account key JSON (GitHub secret), optional
+  GSC_ACCESS_TOKEN   OAuth access token with the webmasters scope, optional
   GSC_SITE           Search Console property, default sc-domain:katabarwalabs.dev
   GITHUB_STEP_SUMMARY  written to when present
 """
@@ -99,15 +101,6 @@ def indexnow(urls):
         log(f"IndexNow: HTTP {e.code} {e.read().decode()[:200]}")
 
 
-def gsc_token(sa_json):
-    from google.oauth2 import service_account  # pip install google-auth
-    import google.auth.transport.requests
-    creds = service_account.Credentials.from_service_account_info(
-        json.loads(sa_json), scopes=["https://www.googleapis.com/auth/webmasters"])
-    creds.refresh(google.auth.transport.requests.Request())
-    return creds.token
-
-
 def gsc_call(token, method, url, data=None):
     req = urllib.request.Request(url, method=method, data=json.dumps(data).encode() if data else None,
                                  headers={"Authorization": "Bearer " + token, "Content-Type": "application/json"})
@@ -120,11 +113,10 @@ def gsc_call(token, method, url, data=None):
 
 
 def search_console(urls, everything):
-    sa = os.environ.get("GSC_SERVICE_ACCOUNT_JSON")
-    if not sa:
-        log("Search Console: GSC_SERVICE_ACCOUNT_JSON not set, skipped")
+    token = os.environ.get("GSC_ACCESS_TOKEN")
+    if not token:
+        log("Search Console: no GSC_ACCESS_TOKEN (workload identity step failed or skipped)")
         return
-    token = gsc_token(sa)
     from urllib.parse import quote
     status, _ = gsc_call(token, "PUT",
                          f"https://www.googleapis.com/webmasters/v3/sites/{quote(GSC_SITE, safe='')}/sitemaps/{quote(SITE + '/sitemap.xml', safe='')}")

@@ -72,10 +72,14 @@ The last workflow step tells search engines what changed:
   the step posts the URLs whose page source changed in the push (all sitemap URLs on a
   `workflow_dispatch` run or when layouts/data/lib changed). No secret.
 - **Google Search Console**: resubmits `/sitemap.xml` and runs URL Inspection on the changed URLs,
-  printing verdict, coverage state and last crawl in the run summary. Needs the
-  `GSC_SERVICE_ACCOUNT_JSON` repository secret (a service-account key whose email is added as a
-  Full user on the `sc-domain:katabarwalabs.dev` property). Without the secret the step logs
-  "skipped" and the deploy still passes. Google's sitemap ping endpoint is gone (2023) and the
+  printing verdict, coverage state and last crawl in the run summary. Auth is keyless (the GCP org
+  policy forbids service-account keys): `google-github-actions/auth` exchanges the GitHub OIDC
+  token at workload identity pool `github`, provider `katabarwalabs-site` (project
+  `katabarwa-marketplace`, 988890029470, condition `assertion.repository ==
+  'abahocodes/katabarwalabs-site'`) for an access token of service account
+  `gsc-ci@katabarwa-marketplace.iam.gserviceaccount.com`, which must be a **Full** user on the
+  `sc-domain:katabarwalabs.dev` property (Search Console → Settings → Users and permissions). If the
+  auth step fails the deploy still passes; the notify step logs the reason. Google's sitemap ping endpoint is gone (2023) and the
   Indexing API is not allowed for ordinary pages, so sitemap + inspection is the whole automatable
   surface; a fresh page still gets indexed on Google's own schedule.
 
