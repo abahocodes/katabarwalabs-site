@@ -1,0 +1,97 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'access-snapshot-drift';
+const listing = withUtm('https://marketplace.atlassian.com/apps/3543425839/access-snapshot-drift', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="How to prove who could access a Jira project on a past date"
+  description="Jira Cloud shows access as it is today and keeps audit events for about 180 days. Here is why point-in-time access evidence is hard, the daily-snapshot method you can script, and an in-tenant option that keeps the history for you."
+  tag="Atlassian compliance"
+  pubDate="September 10, 2026"
+  readMins={6}
+  image="/apps/jira-access-snapshot-drift/h1.png"
+>
+  <p>
+    "Show me everyone who could access the Payments project on March 3rd." It sounds like a lookup.
+    In Jira Cloud it is closer to archaeology, and if the date is more than about six months back it
+    is usually impossible. This post explains why, gives a snapshot method you can script, and
+    describes the packaged version.
+  </p>
+
+  <h2>Why Jira Cloud cannot answer this natively</h2>
+  <ul>
+    <li><strong>Project settings are a live view.</strong> The roles page shows who is in each role
+      right now. There is no "as of" selector and no history behind it.</li>
+    <li><strong>The audit log is a change feed with a short memory.</strong> It records role and
+      group changes, but it retains roughly 180 days, and it never records a roster. Reconstructing
+      a past-date roster from change events means replaying every change since a known state you do
+      not have.</li>
+    <li><strong>Access is indirect.</strong> A user is in a group, the group holds a project role, the
+      role grants access. Any answer has to expand groups to effective users, at the point in time
+      being asked about, which is the part the audit log cannot give you.</li>
+  </ul>
+  <p>
+    Longer retention is a long-open request on the Jira tracker
+    (<a class="text-brand" href="https://jira.atlassian.com/browse/JRACLOUD-68267" target="_blank" rel="noopener">JRACLOUD-68267</a>),
+    and the access-history problem is a specific, sharper form of it.
+  </p>
+
+  <h2>The DIY approach: take a dated snapshot every day</h2>
+  <p>
+    If the platform will not remember, you record it yourself. The REST API has every piece:
+  </p>
+  <ul>
+    <li><strong>Enumerate projects</strong>, then each project's roles
+      (<code>GET /rest/api/3/project/&#123;key&#125;/role</code>) and the actors in each role, users and
+      groups alike.</li>
+    <li><strong>Expand groups to people</strong> with <code>GET /rest/api/3/group/member</code>, so the
+      snapshot holds effective users, not just group names that will mean something different next
+      year.</li>
+    <li><strong>Store the whole matrix under today's date</strong> in storage you control, and read it
+      back verbatim when an auditor names a date.</li>
+    <li><strong>Diff each run against the previous one</strong> so you also get a drift feed: who was
+      added or removed, per project, per role, per day.</li>
+  </ul>
+  <p>
+    The catch is operational: this is a scheduled crawler with rate-limit handling, per-project
+    failure isolation, a retention window, and pruning, and it has to run every day, forever. Miss a
+    week and that week is unanswerable. The diff step is also where hand-rolled scripts usually go
+    wrong, because group membership changes and role changes interleave.
+  </p>
+
+  <h2>A ready-made option: Access Snapshot &amp; Drift</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Access Snapshot &amp; Drift</a>
+    on the Atlassian Marketplace, and the <a class="text-brand font-semibold" href={`${base}/atlassian/jira-access-snapshot-drift`}>product page</a>
+    with screenshots and scopes. Forge app, runs entirely inside your Jira Cloud tenant.
+  </div>
+  <p>
+    Access Snapshot &amp; Drift takes that daily snapshot for you: every project's roles, group grants,
+    and effective users, with groups fully expanded, stored under its date and retained for a window
+    you control (around 400 days by default, well past the native cap). Each run is diffed against
+    the last, so drift is a delta to review rather than a re-audit, and any date's full matrix
+    exports as CSV, one row per grant. The snapshot and reporting path is read-only.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native memory:</strong> live roster today, change events for about 180 days, no
+      point-in-time roster ever.</li>
+    <li><strong>What evidence needs:</strong> a dated matrix of project, role, group, and effective
+      user, readable for any date in the review period.</li>
+    <li><strong>Durable fix:</strong> a daily snapshot with groups expanded, retained past the audit
+      horizon, diffed for drift.</li>
+    <li><strong>Least privilege:</strong> project, role, group, and user read; app storage. Nothing
+      written to Jira on the snapshot path.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/keep-atlassian-audit-logs-beyond-retention`}>How to keep Jira audit logs past the retention window</a>
+    and
+    <a class="text-brand" href={`${base}/blog/jira-group-usage-beyond-permission-schemes`}>where groups are actually used in Jira</a>.
+  </p>
+</BlogPost>

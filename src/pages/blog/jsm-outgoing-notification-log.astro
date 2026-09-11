@@ -1,0 +1,100 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'notification-log-for-jsm';
+const listing = withUtm('https://marketplace.atlassian.com/apps/966773862/notification-log-for-jsm', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="JSM only logs the customer notifications that fail. Here is how to keep the ones that were sent"
+  description="Jira Service Management keeps no queryable record of the notifications it sends; the native log holds failures only. Here is what the native tools can and cannot answer, the DIY event-capture approach, and an in-tenant option."
+  tag="Jira Service Management"
+  pubDate="September 10, 2026"
+  readMins={6}
+  image="/apps/jsm-notification-log/h1.png"
+  community="https://community.atlassian.com/forums/App-Central-articles/How-to-keep-a-record-of-every-outgoing-customer-notification-in/ba-p/3282850"
+>
+  <p>
+    "Did the customer actually get our reply?" Every service desk hears it, and in Jira Service
+    Management Cloud it is a surprisingly hard question. JSM sends notifications constantly, on
+    request created, on public reply, on status change, and it keeps no searchable, retained record
+    that any of them went out. The request for an outgoing email log,
+    <a class="text-brand" href="https://jira.atlassian.com/browse/JSDCLOUD-4698" target="_blank" rel="noopener">JSDCLOUD-4698</a>,
+    has been open for years with roughly 1,500 votes.
+  </p>
+
+  <h2>What the native tools actually answer</h2>
+  <ul>
+    <li><strong>The Customer Notification Log</strong> (Project settings, Customer notifications) looks
+      like the log you want, and it is the first thing to check. The catch is in what it holds:
+      only notifications that <em>failed</em> to send, with a reason. It is a bounce list, not a
+      sent-items folder.</li>
+    <li><strong>Notification Helper</strong> answers a hypothetical about one issue and one recipient
+      right now: would a notification be sent, and why or why not. It says nothing about what was
+      sent last Tuesday.</li>
+    <li><strong>The notification scheme</strong> is where most "nobody got it" cases originate.
+      Reviewing which events map to which recipients catches the silent misconfigurations.</li>
+  </ul>
+  <p>
+    None of these produce a retained, searchable history of successful sends, which is what a
+    complaint, a dispute, or an SLA review actually needs.
+  </p>
+
+  <h2>The DIY approach: record the events that trigger notifications</h2>
+  <p>
+    Since JSM will not tell you what it sent, the durable approach is to capture the moments it
+    decides to send. Every customer notification is driven by a Jira event you can observe:
+  </p>
+  <ul>
+    <li>Subscribe to <strong>issue created</strong>, <strong>comment created</strong> (public replies
+      and internal notes are distinguishable by the comment's visibility), and
+      <strong>issue transitioned</strong> events through a webhook or, inside Forge, a product event
+      trigger.</li>
+    <li>For each event, resolve the <strong>recipient set</strong>: the reporter and request
+      participants for customer-facing events, which is exactly the audience JSM emails.</li>
+    <li>Store one row per event with the request key, service desk, actor, audience (customer or
+      internal), notification type, and timestamp, keyed so overlapping deliveries dedupe by id.</li>
+    <li>Retain for the window your reviews need, prune beyond it, and export as CSV on request.</li>
+  </ul>
+  <p>
+    The catch is that this has to run continuously from the day you start; there is no backfill,
+    because the history does not exist anywhere to backfill from. It also has to live somewhere,
+    which usually means infrastructure outside Jira and a conversation with security about where
+    customer email addresses are now being stored.
+  </p>
+
+  <h2>A ready-made option: Notification Log for JSM</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Notification Log for JSM</a>
+    on the Atlassian Marketplace, and the <a class="text-brand font-semibold" href={`${base}/atlassian/jsm-notification-log`}>product page</a>
+    with screenshots and the scope table. It is a Forge app: the capture, the storage, and the export
+    all run on Atlassian's platform inside your own tenant.
+  </div>
+  <p>
+    Notification Log for JSM is that pattern packaged. It records every notification-triggering event
+    as it fires, captures the request, desk, actor, and recipient set, and keeps the log searchable by
+    request, desk, audience, and type. Retention is a window you set, pruned automatically, and the
+    whole log exports as audit-ready CSV in one click. It is read-only: it records and exports, and
+    changes nothing in JSM.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native log scope:</strong> failed sends only. Successful notifications leave no
+      retained record in JSM Cloud.</li>
+    <li><strong>What can be observed:</strong> the Jira events that drive notifications, with their
+      recipient sets, from the moment capture starts.</li>
+    <li><strong>What cannot be observed by any tenant app:</strong> final mail delivery, which
+      happens inside Atlassian's pipeline. A log proves what was sent, not what was opened.</li>
+    <li><strong>Least privilege:</strong> the pattern needs service desk request read, work and user
+      read, and app storage. Nothing is written back.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/audit-jsm-portal-customer-access`}>How to audit who can access your Jira Service Management portals</a>
+    and
+    <a class="text-brand" href={`${base}/blog/keep-atlassian-audit-logs-beyond-retention`}>how to keep Jira audit logs past the retention window</a>.
+  </p>
+</BlogPost>

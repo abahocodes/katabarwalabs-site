@@ -5,6 +5,41 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 // Hand-maintained post list (newest first). Add an entry when you publish a post.
 const posts = [
   {
+    slug: 'export-and-back-up-a-single-jira-project',
+    title: 'How to export and back up a single Jira Cloud project before you decommission it',
+    excerpt: 'Jira Cloud has no per-project export and site backup is all-or-nothing. What the CSV drops, the REST API method for a complete record, archive versus trash, and an in-tenant option.',
+    tag: 'Jira administration',
+    date: 'September 10, 2026',
+  },
+  {
+    slug: 'confluence-restricted-pages-who-can-read-them',
+    title: 'How to see every restricted page in Confluence Cloud, and who can read it',
+    excerpt: 'Confluence has no site-wide inventory of restricted pages. Why visibility goes blind at scale, the two-API sweep you can script, and an option that keeps the inventory and flags orphans.',
+    tag: 'Confluence administration',
+    date: 'September 10, 2026',
+  },
+  {
+    slug: 'find-inactive-jira-users-reclaim-licenses',
+    title: 'How to find inactive Jira users and reclaim their licenses',
+    excerpt: 'No screen answers who has not touched Jira in 90 days. The org directory export, the JQL method for Jira-specific activity, the seat mechanics, and an in-tenant option.',
+    tag: 'Jira administration',
+    date: 'September 10, 2026',
+  },
+  {
+    slug: 'prove-who-had-jira-project-access-on-a-past-date',
+    title: 'How to prove who could access a Jira project on a past date',
+    excerpt: 'Jira shows access as it is today and forgets change events after about 180 days. The daily snapshot method with groups expanded, and an option that keeps the history for you.',
+    tag: 'Atlassian compliance',
+    date: 'September 10, 2026',
+  },
+  {
+    slug: 'jsm-outgoing-notification-log',
+    title: 'JSM only logs the customer notifications that fail. Here is how to keep the ones that were sent',
+    excerpt: 'JSM keeps no record of successful notifications; the native log holds failures only. What the native tools answer, the event-capture method, and an in-tenant option.',
+    tag: 'Jira Service Management',
+    date: 'September 10, 2026',
+  },
+  {
     slug: 'export-jsm-assets-object-schema',
     title: 'How to bulk-export a JSM Assets object schema (CSV or JSON)',
     excerpt: 'JSM Assets has no built-in whole-schema export; the UI does one object type at a time. Here is the AQL-paging DIY approach and a ready-made in-tenant option.',

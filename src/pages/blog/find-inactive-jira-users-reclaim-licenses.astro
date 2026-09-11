@@ -1,0 +1,91 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'inactive-user-hygiene';
+const listing = withUtm('https://marketplace.atlassian.com/apps/2720285106/inactive-user-hygiene', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="How to find inactive Jira users and reclaim their licenses"
+  description="Jira Cloud bills per user and has no screen that answers who has not touched anything in 90 days. Here is the org directory export, the REST API method for Jira-specific activity, the seat mechanics that matter, and an in-tenant option."
+  tag="Jira administration"
+  pubDate="September 10, 2026"
+  readMins={6}
+  image="/apps/jira-inactive-user-hygiene/h1.png"
+>
+  <p>
+    You pay per user. You suspect a chunk of those seats are dormant. And no screen in Jira answers
+    the plain question: who has not touched anything in ninety days? Jira shows you who exists, not
+    who is present. Bulk handling of inactive accounts is one of the higher-voted requests on the
+    identity tracker
+    (<a class="text-brand" href="https://jira.atlassian.com/browse/ID-8172" target="_blank" rel="noopener">ID-8172</a>).
+  </p>
+
+  <h2>Start with the org directory, not Jira</h2>
+  <p>
+    The first sweep is at admin.atlassian.com. Under Directory, export managed accounts to CSV; it
+    includes a "last seen" column, the most recent authentication to any Atlassian product. Sort it
+    ascending and the dormant tail is obvious. Two limits: "last seen" is org-wide, so a user who
+    lives in Confluence and never opens Jira still reads as active, and the export needs org admin
+    rights with a verified domain. One fact to hold on to: deactivating an account on that
+    Directory screen is the only action that actually frees a license seat.
+  </p>
+
+  <h2>The DIY approach: derive last Jira activity per user</h2>
+  <ul>
+    <li><strong>Enumerate the roster</strong> with <code>GET /rest/api/3/users/search</code>, keeping
+      human accounts only.</li>
+    <li><strong>Find each user's newest activity</strong> with one enhanced JQL query per user:
+      <code>assignee = "&lt;accountId&gt;" OR reporter = "&lt;accountId&gt;" ORDER BY updated DESC</code>,
+      <code>maxResults=1</code>, <code>fields=updated</code>. The single result's updated timestamp is
+      a defensible last-activity date.</li>
+    <li><strong>Respect the limits.</strong> Search is rate limited: paginate with
+      <code>nextPageToken</code> rather than offsets, and honor 429 with Retry-After.</li>
+    <li><strong>Decide what a failed lookup means before you run.</strong> Unknown is never the same
+      as inactive. A user whose activity you could not resolve stays off the reclaim list.</li>
+  </ul>
+  <p>
+    Once you have days-idle per user, sort into three buckets: idle, never active (resolved, no
+    activity ever), and unresolved (excluded). Review the first two with managers before touching
+    anything. And keep the seat mechanics straight: removing a user from a Jira group does not free a
+    seat; deactivation in the org directory does.
+  </p>
+  <p>
+    The catch is that you now own a roster crawler with rate-limit handling, failure tracking, and a
+    re-run schedule. Miss the re-runs and "newly idle since last month" stops being answerable.
+  </p>
+
+  <h2>A ready-made option: Inactive-User Hygiene</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Inactive-User Hygiene</a>
+    on the Atlassian Marketplace, and the <a class="text-brand font-semibold" href={`${base}/atlassian/jira-inactive-user-hygiene`}>product page</a>.
+    Forge app, runs inside your own Jira Cloud tenant.
+  </div>
+  <p>
+    Inactive-User Hygiene runs the method above on a daily schedule: it enumerates human accounts,
+    derives each user's last activity from issue history, classifies everyone against a threshold you
+    set, and never flags a user it could not resolve. The result is a worklist rather than a data
+    dump: sort by days idle, filter by classification, spot who became idle since the last scan, and
+    export as CSV, one row per user. It is honest on the report itself that it measures Jira
+    activity, not org-wide login, because the org admin API is not reachable by a tenant app.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Where seats are freed:</strong> only by deactivation in the org directory, never by
+      group changes in Jira.</li>
+    <li><strong>Best Jira-specific signal:</strong> the newest issue a user is assignee or reporter
+      on, which is what the JQL query returns.</li>
+    <li><strong>The rule that keeps you safe:</strong> unresolved is not inactive.</li>
+    <li><strong>Least privilege:</strong> user read and work read, plus app storage. The report path
+      writes nothing.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/jira-filters-dashboards-deactivated-owners`}>What deactivated users leave behind in Jira</a>
+    and
+    <a class="text-brand" href={`${base}/blog/set-an-entra-id-account-to-expire`}>the Entra ID version of the same problem</a>.
+  </p>
+</BlogPost>

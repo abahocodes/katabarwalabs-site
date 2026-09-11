@@ -95,6 +95,7 @@ export const atlassianApps: AtlassianApp[] = [
     youtube: 'tI16AV1EC3w',
     listing: 'https://marketplace.atlassian.com/apps/3543425839/access-snapshot-drift',
     docs: docsBase + 'access-snapshot-drift.md',
+    blog: '/blog/prove-who-had-jira-project-access-on-a-past-date',
   },
   {
     slug: 'jira-audit-log-retention',
@@ -166,6 +167,7 @@ export const atlassianApps: AtlassianApp[] = [
     youtube: 'knUtcXXKQn4',
     listing: 'https://marketplace.atlassian.com/apps/2720285106/inactive-user-hygiene',
     docs: docsBase + 'inactive-user-hygiene.md',
+    blog: '/blog/find-inactive-jira-users-reclaim-licenses',
   },
   {
     slug: 'jira-orphaned-owner-cleanup',
@@ -274,6 +276,7 @@ export const atlassianApps: AtlassianApp[] = [
     youtube: 'IkUOh9VqfY0',
     listing: 'https://marketplace.atlassian.com/apps/966773862/notification-log-for-jsm',
     docs: docsBase + 'jsm-notification-log.md',
+    blog: '/blog/jsm-outgoing-notification-log',
   },
   {
     slug: 'jsm-assets-export',
@@ -378,6 +381,7 @@ export const atlassianApps: AtlassianApp[] = [
     youtube: 'Ryf6RbaPg2c',
     listing: 'https://marketplace.atlassian.com/apps/511936964/page-restriction-governance',
     docs: docsBase + 'page-restriction-governance.md',
+    blog: '/blog/confluence-restricted-pages-who-can-read-them',
   },
   {
     slug: 'jira-project-export-backup',
@@ -416,6 +420,7 @@ export const atlassianApps: AtlassianApp[] = [
     youtube: 'WTDIIPXJP5c',
     listing: 'https://marketplace.atlassian.com/apps/3373514803/project-export-backup',
     docs: docsBase + 'project-export-backup.md',
+    blog: '/blog/export-and-back-up-a-single-jira-project',
   },
 ];
 

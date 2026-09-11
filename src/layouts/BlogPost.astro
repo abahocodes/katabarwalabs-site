@@ -1,6 +1,6 @@
 ---
 import Base from './Base.astro';
-import { blogPosting, breadcrumbs, isoDate } from '../lib/seo';
+import { blogPosting, breadcrumbs, isoDate, asset } from '../lib/seo';
 
 interface Props {
   title: string;        // SEO <title> and H1
@@ -8,17 +8,19 @@ interface Props {
   pubDate: string;      // e.g. "August 26, 2026"
   tag?: string;         // small eyebrow label, e.g. "Azure cost management"
   readMins?: number;
+  image?: string;       // site-relative path under public/, used for og:image and BlogPosting.image
+  community?: string;   // URL of the matching Atlassian Community App Central article, if one exists
 }
-const { title, description, pubDate, tag = 'Azure', readMins } = Astro.props;
+const { title, description, pubDate, tag = 'Azure', readMins, image, community } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const path = Astro.url.pathname.replace(base, '').replace(/\/$/, '') || '/';
 const published = isoDate(pubDate);
 const jsonLd = [
   breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: title, path }]),
-  blogPosting({ path, title, description, isoDate: published, tag }),
+  blogPosting({ path, title, description, isoDate: published, tag, image: image ? asset(image) : undefined }),
 ];
 ---
-<Base title={`${title} | Katabarwa Labs`} description={description} ogType="article" publishedTime={published} jsonLd={jsonLd}>
+<Base title={`${title} | Katabarwa Labs`} description={description} ogType="article" publishedTime={published} jsonLd={jsonLd} ogImage={image ? asset(image) : undefined}>
   <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
     <div class="wrap pt-[52px] pb-[44px]">
       <a href={`${base}/blog`} class="text-[13px] font-semibold uppercase tracking-[0.14em] text-accent hover:text-white">
@@ -36,6 +38,12 @@ const jsonLd = [
   <main class="prose-page mx-auto max-w-[760px] px-6 pt-10 pb-[72px]">
     <slot />
 
+    {community && (
+      <p class="mt-8 rounded-xl border border-line bg-soft px-5 py-4 text-[15px] text-ink2">
+        A version of this piece also appears on Atlassian Community:
+        <a class="font-semibold text-brand" href={community} target="_blank" rel="noopener">read it on App Central</a>.
+      </p>
+    )}
     <hr class="my-10 border-line" />
     <p class="text-[14px] text-muted">
       Written by the team at <a class="text-brand" href={`${base}/`}>Katabarwa Labs</a>.

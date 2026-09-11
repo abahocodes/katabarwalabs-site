@@ -1,0 +1,85 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'page-restriction-governance';
+const listing = withUtm('https://marketplace.atlassian.com/apps/511936964/page-restriction-governance', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="How to see every restricted page in Confluence Cloud, and who can read it"
+  description="Confluence has no site-wide inventory of restricted pages. Here is why restriction visibility goes blind at scale, the REST API sweep you can script, and an in-tenant option that keeps the inventory and flags orphaned restrictions."
+  tag="Confluence administration"
+  pubDate="September 10, 2026"
+  readMins={6}
+  image="/apps/confluence-page-restriction-governance/h1.png"
+>
+  <p>
+    A security review asks which pages in the site are restricted and who exactly can read them.
+    Confluence has no screen for it. Restrictions are set one page at a time, by almost anyone, and
+    nothing rolls them up. A site-wide view has been requested for years
+    (<a class="text-brand" href="https://jira.atlassian.com/browse/CONFCLOUD-74405" target="_blank" rel="noopener">CONFCLOUD-74405</a>).
+  </p>
+
+  <h2>Why restriction visibility goes blind at scale</h2>
+  <ul>
+    <li><strong>Restrictions are decentralized by design.</strong> Any editor can lock a page to a few
+      people without asking an admin. Convenient on the day, invisible at audit time.</li>
+    <li><strong>The native surface is per page or per person.</strong> The lock control shows who
+      holds view and edit on this page. Space permissions show who can enter the space at all. Neither
+      lists the restricted pages inside.</li>
+    <li><strong>Restrictions rot.</strong> They keep naming accounts that were deactivated a year ago,
+      and pages under a read-restricted ancestor are gated by a page nobody is looking at.</li>
+  </ul>
+
+  <h2>The DIY approach: sweep every page's restrictions</h2>
+  <ul>
+    <li><strong>Enumerate current pages</strong> with <code>GET /wiki/api/v2/pages?status=current</code>,
+      cursor-paged across the whole site, personal spaces included.</li>
+    <li><strong>Pull each page's restrictions</strong> from
+      <code>GET /wiki/rest/api/content/&#123;id&#125;/restriction</code> with user and group expansions,
+      and keep the read and update subjects separately.</li>
+    <li><strong>Flag the debris:</strong> subjects that are deactivated accounts, and pages whose
+      effective read gate is an ancestor's restriction rather than their own.</li>
+    <li><strong>Store the inventory by date</strong> and diff each sweep against the last, so the next
+      review is "what changed" rather than a full pass.</li>
+  </ul>
+  <p>
+    The catch is that there is no single call for any of this. A site-wide sweep is real work
+    (pagination, per-page lookups within rate limits, retries), it needs scheduling and storage to be
+    more than a one-off, and a single pass still cannot tell you what changed since last time.
+  </p>
+
+  <h2>A ready-made option: Page-Restriction Governance</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Page-Restriction Governance</a>
+    on the Atlassian Marketplace, and the <a class="text-brand font-semibold" href={`${base}/atlassian/confluence-page-restriction-governance`}>product page</a>.
+    Forge app, runs inside your own Confluence Cloud tenant.
+  </div>
+  <p>
+    Page-Restriction Governance runs that sweep daily and on demand and keeps the result: every
+    restricted page site-wide with the exact users and groups holding read and update, grouped by
+    space. Restrictions naming deactivated accounts are flagged as orphans, inherited restrictions
+    carry a note pointing at the ancestor that actually gates them, and each sweep is diffed against
+    the previous one so the audit becomes a delta. The inventory exports as CSV, one row per subject.
+    Lookups are bounded per run, so large sites are scanned politely; reporting is read-only, with
+    one opt-in, previewed cleanup of orphaned restrictions.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native coverage:</strong> one page at a time via the lock dialog; no site-wide list.</li>
+    <li><strong>Two APIs, not one:</strong> v2 for pages, v1 for restrictions, joined per page.</li>
+    <li><strong>What reviewers want:</strong> the inventory, the orphans, and the delta since last
+      quarter.</li>
+    <li><strong>Least privilege:</strong> page, space, and user read; app storage. Nothing changes on
+      the reporting path.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/confluence-attachment-cleanup-storage`}>Find what is eating your Confluence storage</a>
+    and
+    <a class="text-brand" href={`${base}/blog/jira-group-usage-beyond-permission-schemes`}>where groups are actually used in Jira</a>.
+  </p>
+</BlogPost>

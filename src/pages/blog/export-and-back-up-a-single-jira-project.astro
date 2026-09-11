@@ -1,0 +1,95 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'project-export-backup';
+const listing = withUtm('https://marketplace.atlassian.com/apps/3373514803/project-export-backup', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="How to export and back up a single Jira Cloud project before you decommission it"
+  description="Jira Cloud has no per-project export and site backup is all-or-nothing. Here is what the CSV export drops, the REST API method that captures a complete record, archive versus trash, and an in-tenant option that does export, verify, then retire."
+  tag="Jira administration"
+  pubDate="September 10, 2026"
+  readMins={6}
+  image="/apps/jira-project-export-backup/h1.png"
+>
+  <p>
+    "This project is done. Retire it, but keep a copy of everything in case someone asks." Simple
+    until you look for the export button. Jira Cloud has none for a project, the site backup is
+    all-or-nothing, and proving what a project contained the day you archived it is on you. A
+    single-project export is one of the longest-standing asks on the tracker
+    (<a class="text-brand" href="https://jira.atlassian.com/browse/JRACLOUD-34307" target="_blank" rel="noopener">JRACLOUD-34307</a>,
+    over a thousand votes).
+  </p>
+
+  <h2>What the issue-search CSV export drops</h2>
+  <p>
+    The fastest path is a JQL search for <code>project = KEY</code> exported to CSV. It gives you one
+    row per issue with fields, and not much else. Comments come across thin or not at all, the
+    changelog is absent, worklogs are absent, links are flattened, and attachments are names without
+    the files. As a record of the project it is a summary, not a backup.
+  </p>
+
+  <h2>The DIY approach: extract per issue through the REST API</h2>
+  <ul>
+    <li><strong>Page the project's issues</strong> with <code>POST /rest/api/3/search/jql</code>
+      ordered by created date, expanding the changelog on each page.</li>
+    <li><strong>Enrich each issue</strong> with its comments
+      (<code>GET /rest/api/3/issue/&#123;key&#125;/comment</code>) and worklogs
+      (<code>GET /rest/api/3/issue/&#123;key&#125;/worklog</code>).</li>
+    <li><strong>Read links off <code>issuelinks</code></strong> and attachment metadata off
+      <code>attachment</code>; the binaries are separate authenticated downloads.</li>
+    <li><strong>Write a manifest</strong> alongside the data: project, issue count, timestamp, the
+      field list, and whether anything was cut short. Without it, nobody can later say the backup was
+      complete.</li>
+  </ul>
+  <p>
+    Done carefully this is a genuinely complete record. The cost is the pagination, the per-issue
+    calls, the normalization into something storable, and doing it the same way every time.
+  </p>
+
+  <h2>Archive versus trash, before you retire anything</h2>
+  <p>
+    Archiving keeps a project restorable from the Jira archive, and it is a Premium and Enterprise
+    feature. Trashing moves the project to the recycle bin, recoverable for 60 days and then deleted
+    permanently by Jira. Either way, the right order is export, verify the export covers the live
+    project, and only then retire it, with the export as the audit trail of what was retired.
+  </p>
+
+  <h2>A ready-made option: Project Export &amp; Backup</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Project Export &amp; Backup</a>
+    on the Atlassian Marketplace, and the <a class="text-brand font-semibold" href={`${base}/atlassian/jira-project-export-backup`}>product page</a>
+    with screenshots and a 60-second demo. Forge app, generated inside your own tenant.
+  </div>
+  <p>
+    Project Export &amp; Backup automates the method above. Pick a project, choose CSV (one row per
+    issue) or JSON (structured, re-import friendly), and it pages the issues, expands each changelog,
+    gathers comments and worklogs, and streams the file to your browser with a manifest. Every export
+    is recorded in a history. On top sits an opt-in, heavily guarded decommission: it only offers to
+    archive or trash a project with a complete export from the last 7 days, preview is the default,
+    you type the project key to confirm, and it re-checks the live issue count against the backup
+    before acting. Attachments are exported as URLs and metadata, not binaries, and each run is
+    bounded and flagged as truncated if a project exceeds the cap.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Native options:</strong> a filtered CSV of fields, or a whole-site backup. Nothing in
+      between.</li>
+    <li><strong>A complete record needs:</strong> fields, comments, worklogs, changelog, links,
+      attachment references, and a manifest that says it is complete.</li>
+    <li><strong>Retire in this order:</strong> export, verify, archive (Premium) or trash (60-day
+      recovery).</li>
+    <li><strong>Scopes:</strong> read for the export; two write scopes used only by the opt-in
+      decommission path.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/keep-atlassian-audit-logs-beyond-retention`}>How to keep Jira audit logs past the retention window</a>
+    and
+    <a class="text-brand" href={`${base}/blog/jira-filters-dashboards-deactivated-owners`}>what deactivated users leave behind in Jira</a>.
+  </p>
+</BlogPost>
