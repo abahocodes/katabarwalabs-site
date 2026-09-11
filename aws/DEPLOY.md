@@ -55,7 +55,7 @@ After the domain resolves, repoint the marketplace profiles/LISTINGs from the in
 ## 4. Analytics and SEO conventions (added 2026-09-10)
 
 **Information architecture.** Platform-first, the way multi-platform Marketplace vendors do it:
-`/atlassian` (hub) → `/atlassian/<slug>` (product), `/azure` (hub, cards link out), `/blog`,
+`/atlassian` (hub) → `/atlassian/<slug>` (product), `/azure` (hub) → `/azure/<slug>` (product), `/blog`,
 `/security` (trust page), `/support`, `/privacy`. The footer is the sitemap. The old `/apps/*`
 routes 301 to `/atlassian/*` in the CloudFront function and via static redirect pages in
 `astro.config.mjs` (enumerated from `public/apps/*`, which stays the screenshot folder).
@@ -65,7 +65,8 @@ routes 301 to `/atlassian/*` in the CloudFront function and via static redirect 
   `utm_campaign=<marketplace listing slug>`, `utm_content=<placement>`. The campaign is the
   Marketplace slug (e.g. `compliance-log-vault`), never the site slug, so an app is one id
   everywhere. Placements in use: `app-page-hero`, `app-page-docs`, `app-page-footer`,
-  `azure-hub-card`, `home-azure-card`, `blog-post`.
+  `azure-page-hero`, `azure-page-footer`, `blog-post`. Hub and homepage cards link to product pages,
+  so every Marketplace click passes through a page that explains the product first.
 - `track(marketplace, app, placement)`: `data-track` attributes that `Base.astro`'s click
   listener turns into a GA4 event `marketplace_click` with params `marketplace`, `app`,
   `placement`, `link_url`.
@@ -78,7 +79,8 @@ clicks, and `marketplace_click` sits alongside them.
 **SEO** (`src/lib/seo.ts`, `src/layouts/Base.astro`). Every page has a canonical pointing at
 `https://katabarwalabs.dev` (even on the Pages preview), full Open Graph and Twitter card tags,
 and a JSON-LD graph: `Organization` + `WebSite` sitewide, `BreadcrumbList` + `SoftwareApplication`
-on app pages, `BlogPosting` on posts, `CollectionPage` + `ItemList` on the two hubs. `og:image`
+on app pages, `BlogPosting` on posts, `CollectionPage` + `ItemList` on the two hubs. `src/data/azureAppDetails.ts` holds the Azure product records; `price` is null until
+confirmed from Partner Center, and the JSON-LD `Offer` carries the number only when it is set. `og:image`
 defaults to `public/og/default.png` (1200×630) and is the first screenshot on app pages.
 `public/logo-512.png` is the Organization logo. Both PNGs were rendered from HTML in a browser; the
 source card lives in git history (commit that added `public/og`). `sitemap.xml` is generated from

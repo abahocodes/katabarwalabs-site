@@ -1,0 +1,128 @@
+---
+import Base from './Base.astro';
+import type { AzureAppDetail } from '../data/azureAppDetails';
+import { azureBase } from '../data/azureApps';
+import { withUtm, track } from '../lib/links';
+import { asset, breadcrumbs, canonical, ORIGIN } from '../lib/seo';
+
+interface Props { app: AzureAppDetail; }
+const { app } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const path = `/azure/${app.slug}`;
+const img = (n: number) => `${base}/azure/${app.slug}/s${n}.png`;
+const shots = [1, 2, 3].map((n) => asset(`/azure/${app.slug}/s${n}.png`));
+const listingUrl = azureBase + app.slug;
+const listing = withUtm(listingUrl, app.slug, 'azure-page-hero');
+const listingFooter = withUtm(listingUrl, app.slug, 'azure-page-footer');
+const jsonLd = [
+  breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Azure apps', path: '/azure' }, { name: app.name, path }]),
+  {
+    '@type': 'SoftwareApplication',
+    '@id': canonical(path) + '#app',
+    name: app.name,
+    url: canonical(path),
+    description: app.description,
+    applicationCategory: 'BusinessApplication',
+    applicationSubCategory: 'Azure operations and governance',
+    operatingSystem: 'Microsoft Azure (managed application)',
+    installUrl: listingUrl,
+    sameAs: [listingUrl],
+    screenshot: shots.map((u) => ({ '@type': 'ImageObject', url: u })),
+    offers: app.price
+      ? { '@type': 'Offer', price: String(app.price), priceCurrency: 'USD', availability: 'https://schema.org/InStock', url: listingUrl,
+          priceSpecification: { '@type': 'UnitPriceSpecification', price: String(app.price), priceCurrency: 'USD', billingIncrement: 1, unitCode: 'MON' } }
+      : { '@type': 'Offer', availability: 'https://schema.org/InStock', url: listingUrl, description: 'Flat monthly fee billed through the Azure Marketplace' },
+    author: { '@id': ORIGIN + '/#organization' },
+    publisher: { '@id': ORIGIN + '/#organization' },
+    isAccessibleForFree: false,
+  },
+];
+---
+<Base title={`${app.title} | ${app.name} by Katabarwa Labs`} description={app.description} ogImage={shots[0]} ogType="product" jsonLd={jsonLd}>
+  <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
+    <div class="wrap pt-[56px] pb-[52px]">
+      <a href={`${base}/azure`} class="text-[13px] font-semibold uppercase tracking-[0.14em] text-accent hover:text-white">&larr; All Azure apps</a>
+      <p class="mt-4 text-[13px] font-semibold uppercase tracking-[0.14em] text-[#a9bce6]">{app.group} · {app.name}</p>
+      <h1 class="mt-2 max-w-[820px] text-[clamp(26px,4vw,40px)] font-extrabold leading-[1.12] tracking-[-0.02em] text-white">{app.title}</h1>
+      <p class="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-[#c8d6f7]">{app.tagline}</p>
+      <div class="mt-7 flex flex-wrap items-center gap-3">
+        <a href={listing} target="_blank" rel="noopener" class="btn btn-primary" {...track('azure', app.slug, 'azure-page-hero')}>Deploy from the Azure Marketplace</a>
+        {app.blog && <a href={`${base}${app.blog}`} class="btn btn-ghost">Read the background</a>}
+      </div>
+      <p class="mt-4 text-[13px] text-[#a9bce6]">
+        Deploys as a managed application in your own subscription. No vendor backend, no data egress.
+        {app.price ? ` Flat USD ${app.price} per month, billed by Microsoft.` : ' Flat monthly fee, billed by Microsoft.'}
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap pt-12">
+    <span class="eyebrow">The gap</span>
+    <p class="mt-3 max-w-[72ch] text-[17px] leading-relaxed text-ink2">{app.problem}</p>
+  </section>
+
+  <section class="wrap pt-10">
+    <span class="eyebrow">What it does</span>
+    <ul class="mt-4 max-w-[72ch] list-disc space-y-2 pl-6 text-[16px] text-ink2">{app.features.map((f) => <li>{f}</li>)}</ul>
+    <div class="mt-10 space-y-10">
+      {[1, 2, 3].map((n) => (
+        <figure class="overflow-hidden rounded-2xl border border-line bg-soft">
+          <img src={img(n)} alt={app.captions[n - 1]} loading={n === 1 ? 'eager' : 'lazy'} class="w-full" width="1280" height="720" />
+          <figcaption class="border-t border-line px-5 py-3 text-[14px] text-muted">{app.captions[n - 1]}</figcaption>
+        </figure>
+      ))}
+    </div>
+  </section>
+
+  <section class="wrap pt-12">
+    <span class="eyebrow">Honest about its limits</span>
+    <ul class="mt-4 max-w-[72ch] list-disc space-y-2 pl-6 text-[16px] text-ink2">
+      {app.honest.map((h) => <li>{h}</li>)}
+      {app.writes
+        ? <li><strong>The one write path, honestly scoped:</strong> {app.writes}</li>
+        : <li><strong>Read-only.</strong> This app reports and alerts; it changes nothing in your subscription.</li>}
+    </ul>
+  </section>
+
+  <section class="wrap pt-12">
+    <span class="eyebrow">How it runs, and what it needs</span>
+    <p class="mt-3 max-w-[72ch] text-[16px] text-ink2">
+      A serverless function on a schedule, with a system-assigned managed identity, deployed into your subscription
+      by the Azure Marketplace. Roles are granted by you after deployment with the one-line script in the package, so
+      nothing runs until you say so. Every role it asks for, and why:
+    </p>
+    <div class="mt-4 max-w-[760px] overflow-hidden rounded-xl border border-line">
+      <table class="w-full text-[15px]"><tbody>
+        {app.roles.map((r) => (
+          <tr class="border-b border-line last:border-0">
+            <td class="bg-soft px-4 py-2.5 font-mono text-[13.5px] text-ink">{r.role}</td>
+            <td class="px-4 py-2.5 text-ink2">{r.why}</td>
+          </tr>
+        ))}
+      </tbody></table>
+    </div>
+    <p class="mt-4 max-w-[72ch] text-[15px] text-muted">Alerts go to {app.alerts}. Nothing is sent anywhere else.</p>
+  </section>
+
+  <section class="wrap pt-12">
+    <span class="eyebrow">FAQ</span>
+    <div class="mt-4 max-w-[72ch] space-y-5">
+      <div><h3 class="text-[16px] font-bold text-ink">Does any data leave my subscription?</h3>
+        <p class="mt-1 text-[16px] text-ink2">No. The function runs in your subscription and writes only to your configured alert destination. Katabarwa Labs operates no backend and receives nothing.</p></div>
+      <div><h3 class="text-[16px] font-bold text-ink">How is it billed?</h3>
+        <p class="mt-1 text-[16px] text-ink2">{app.price ? `A flat USD ${app.price} per month` : 'A flat monthly fee'} on your Azure bill through the Marketplace, plus the small consumption cost of the function itself. No per-resource or per-user pricing.</p></div>
+      <div><h3 class="text-[16px] font-bold text-ink">How do I remove it?</h3>
+        <p class="mt-1 text-[16px] text-ink2">Delete the managed application from the Azure portal. Its resource group and identity go with it, and any role you granted can be removed the same way.</p></div>
+      <div><h3 class="text-[16px] font-bold text-ink">Where do I get support?</h3>
+        <p class="mt-1 text-[16px] text-ink2"><a href="mailto:support@llmgraph.ai" class="font-semibold text-brand">support@llmgraph.ai</a>, or the <a href={`${base}/support`} class="font-semibold text-brand">support page</a>.</p></div>
+    </div>
+  </section>
+
+  <section class="wrap pb-16 pt-12">
+    <div class="rounded-2xl border border-line bg-soft px-8 py-8">
+      <h2 class="text-[19px] font-bold text-ink">Deploy {app.name} in your subscription.</h2>
+      <p class="mt-2 max-w-[68ch] text-[15px] text-ink2">{app.tagline}</p>
+      <a href={listingFooter} target="_blank" rel="noopener" class="btn btn-primary mt-4" {...track('azure', app.slug, 'azure-page-footer')}>Deploy from the Azure Marketplace</a>
+    </div>
+  </section>
+</Base>
