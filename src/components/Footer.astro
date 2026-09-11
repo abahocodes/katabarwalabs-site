@@ -1,30 +1,48 @@
 ---
 import Logo from './Logo.astro';
+import { atlassianApps } from '../data/atlassianApps';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const cols: [string, { href: string; label: string; ext?: boolean }[]][] = [
+  ['Atlassian apps', atlassianApps.map((a) => ({ href: `${base}/atlassian/${a.slug}`, label: a.name }))],
+  ['Products', [
+    { href: `${base}/atlassian`, label: 'All Atlassian apps' },
+    { href: `${base}/azure`, label: 'Azure apps' },
+    { href: 'https://llmgraph.ai', label: 'LLMGraph', ext: true },
+  ]],
+  ['Resources', [
+    { href: `${base}/blog`, label: 'Blog' },
+    { href: 'https://github.com/abahocodes/katabarwalabs-docs', label: 'Documentation', ext: true },
+    { href: `${base}/support`, label: 'Support' },
+  ]],
+  ['Company', [
+    { href: `${base}/security`, label: 'Security' },
+    { href: `${base}/privacy`, label: 'Privacy policy' },
+    { href: 'mailto:support@llmgraph.ai', label: 'Contact' },
+  ]],
+];
 ---
 <footer class="bg-[#0b1430] text-[#b9c6e6]">
-  <div class="wrap flex flex-wrap justify-between gap-7 py-11">
+  <div class="wrap grid gap-8 py-11 sm:grid-cols-2 lg:grid-cols-[1.3fr_1.4fr_1fr_1fr_1fr]">
     <div class="max-w-[300px]">
       <a href={`${base}/`} class="mb-3 flex items-center gap-2.5 font-bold text-white">
         <Logo gid="ftr" />
         <span>Katabarwa&nbsp;Labs</span>
       </a>
-      <p class="text-[14.5px] text-[#93a3c8]">A software company building focused products — the LLMGraph AI platform and a portfolio of in-tenant marketplace apps.</p>
+      <p class="text-[14.5px] text-[#93a3c8]">Small, single-purpose operational tools that run inside your own cloud, billed by the Atlassian and Azure marketplaces. And LLMGraph, a no-code platform for AI support agents.</p>
     </div>
-    <div>
-      <h4 class="mb-3 text-[13px] font-semibold uppercase tracking-[0.12em] text-white">Products</h4>
-      <a href="https://llmgraph.ai" target="_blank" rel="noopener" class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">LLMGraph</a>
-      <a href={`${base}/#products`} class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Marketplace apps</a>
-      <a href={`${base}/#marketplaces`} class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Where to find us</a>
-    </div>
-    <div>
-      <h4 class="mb-3 text-[13px] font-semibold uppercase tracking-[0.12em] text-white">Company</h4>
-      <a href={`${base}/privacy`} class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Privacy policy</a>
-      <a href={`${base}/support`} class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Support</a>
-      <a href="mailto:abaho@llmgraph.ai" class="my-1.5 block text-[15px] text-[#c4d1ef] hover:text-white">Contact</a>
-    </div>
+    {cols.map(([title, links]) => (
+      <div>
+        <h4 class="mb-3 text-[13px] font-semibold uppercase tracking-[0.12em] text-white">{title}</h4>
+        {links.map((l) => (
+          <a href={l.href} target={l.ext ? '_blank' : undefined} rel={l.ext ? 'noopener' : undefined} class="my-1.5 block text-[14.5px] text-[#c4d1ef] hover:text-white">{l.label}</a>
+        ))}
+      </div>
+    ))}
   </div>
   <div class="border-t border-white/10">
-    <div class="wrap py-[18px] text-[13.5px] text-[#8ea0c8]">© 2026 Katabarwa Labs Inc. All rights reserved.</div>
+    <div class="wrap flex flex-wrap items-center justify-between gap-2 py-[18px] text-[13.5px] text-[#8ea0c8]">
+      <span>© 2026 Katabarwa Labs Inc. All rights reserved.</span>
+      <span>Security contact: <a href="mailto:support@llmgraph.ai" class="text-[#c4d1ef] hover:text-white">support@llmgraph.ai</a></span>
+    </div>
   </div>
 </footer>

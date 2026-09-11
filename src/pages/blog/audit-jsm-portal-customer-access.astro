@@ -1,7 +1,10 @@
 ---
 import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const listing = 'https://marketplace.atlassian.com/apps/1250207589/portal-governance-for-jsm';
+const listingSlug = 'portal-governance-for-jsm';
+const listing = withUtm('https://marketplace.atlassian.com/apps/1250207589/portal-governance-for-jsm', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
 ---
 <BlogPost
   title="How to audit who can access your Jira Service Management portals"
@@ -66,7 +69,7 @@ const listing = 'https://marketplace.atlassian.com/apps/1250207589/portal-govern
 
   <h2>A ready-made option: Portal Governance for JSM</h2>
   <div class="callout">
-    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Portal Governance for JSM</a>
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Portal Governance for JSM</a>
     on the Atlassian Marketplace. It is built on Atlassian Forge and runs entirely on Atlassian's
     own platform inside your Jira Cloud tenant, so nothing leaves your instance.
   </div>

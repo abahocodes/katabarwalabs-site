@@ -1,0 +1,78 @@
+---
+import Base from '../layouts/Base.astro';
+import { atlassianApps } from '../data/atlassianApps';
+import { breadcrumbs } from '../lib/seo';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const jsonLd = [breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Security', path: '/security' }])];
+---
+<Base
+  title="Security | how Katabarwa Labs apps handle your data"
+  description="Every Katabarwa Labs app runs inside your own tenant. Atlassian apps run on Forge with no external servers; Azure apps deploy as managed applications in your subscription. What we can and cannot see, the scopes we ask for, and how to reach us."
+  jsonLd={jsonLd}
+>
+  <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
+    <div class="wrap pt-[56px] pb-[52px]">
+      <span class="eyebrow">Security</span>
+      <h1 class="mt-3 max-w-[22ch] text-[clamp(28px,4.5vw,42px)] font-extrabold leading-[1.1] tracking-[-0.02em] text-white">
+        Your data stays in your tenant. That is the whole design.
+      </h1>
+      <p class="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-[#c8d6f7]">
+        We operate no backend. There is no Katabarwa Labs server that your Jira, Confluence, or Azure
+        data is sent to, because there is nowhere for it to go.
+      </p>
+    </div>
+  </section>
+
+  <section class="wrap pt-12">
+    <span class="eyebrow">Atlassian apps</span>
+    <h2 class="mt-2 text-[22px] font-extrabold text-ink">Built on Forge, inside your site</h2>
+    <ul class="mt-4 max-w-[72ch] list-disc space-y-2 pl-6 text-[16px] text-ink2">
+      <li>Every app on this site runs on Atlassian Forge, Atlassian's own serverless platform, within your Atlassian site.</li>
+      <li>App data is held in Forge storage that belongs to your site. Uninstall the app and it is gone.</li>
+      <li>The apps listed here make no external network calls. That is what makes them eligible for Atlassian's "Runs on Atlassian" marker.</li>
+      <li>Each app requests the fewest scopes it can. The exact scopes, and why each one is needed, are printed on every app page.</li>
+      <li>Apps are read-only by default. Where an app can change something, it is a single opt-in path that previews the change set and asks for confirmation first.</li>
+      <li>Every app goes through Atlassian's Marketplace approval, including the Marketplace Security questionnaire. Our code is scanned for dependency vulnerabilities and with static analysis on every change.</li>
+    </ul>
+  </section>
+
+  <section class="wrap pt-12">
+    <span class="eyebrow">Azure apps</span>
+    <h2 class="mt-2 text-[22px] font-extrabold text-ink">Managed applications in your subscription</h2>
+    <ul class="mt-4 max-w-[72ch] list-disc space-y-2 pl-6 text-[16px] text-ink2">
+      <li>Each Azure app deploys as a managed application into your own subscription, under a managed identity you control.</li>
+      <li>Roles are granted by you after deployment, scoped to what the app needs, and revocable at any time.</li>
+      <li>Alerts go only to destinations you configure: your Slack, Teams, or email. Nothing is sent anywhere else.</li>
+    </ul>
+  </section>
+
+  <section class="wrap pt-12">
+    <span class="eyebrow">Scopes by app</span>
+    <h2 class="mt-2 text-[22px] font-extrabold text-ink">What each Atlassian app asks for</h2>
+    <div class="mt-4 max-w-[860px] overflow-hidden rounded-xl border border-line">
+      <table class="w-full text-[15px]">
+        <tbody>
+          {atlassianApps.map((a) => (
+            <tr class="border-b border-line last:border-0 align-top">
+              <td class="bg-soft px-4 py-2.5 font-semibold text-ink"><a href={`${base}/atlassian/${a.slug}`} class="hover:text-brand">{a.name}</a></td>
+              <td class="px-4 py-2.5 font-mono text-[13.5px] text-ink2">{a.scopes.map((s) => s.scope).join(', ')}</td>
+              <td class="px-4 py-2.5 text-[14px] text-muted">{a.writes ? 'one opt-in write path' : 'read-only'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="wrap pb-16 pt-12">
+    <div class="rounded-2xl border border-line bg-soft px-8 py-8">
+      <h2 class="text-[19px] font-bold text-ink">Reporting a vulnerability</h2>
+      <p class="mt-2 max-w-[68ch] text-[15px] text-ink2">
+        Write to <a href="mailto:support@llmgraph.ai" class="font-semibold text-brand">support@llmgraph.ai</a>.
+        We acknowledge reports promptly, fix confirmed issues in line with Atlassian's Marketplace security bug fix
+        policy, and notify affected customers and Atlassian when an incident warrants it. The same address is the
+        security contact on every Marketplace listing.
+      </p>
+    </div>
+  </section>
+</Base>

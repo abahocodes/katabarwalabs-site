@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import { azureApps as azureAppData, azureBase } from '../data/azureApps';
+import { withUtm, track } from '../lib/links';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -13,7 +14,7 @@ const archetypes = [
 ];
 const marketplaces = [
   ['Microsoft Azure Marketplace', '16 apps live'],
-  ['Atlassian Marketplace', '9 apps live'],
+  ['Atlassian Marketplace', '10 apps live'],
   ['Microsoft AppSource', 'in progress'],
   ['AWS Marketplace', 'in progress'],
 ];
@@ -23,16 +24,16 @@ const azureApps = azureAppData.map((a) => [a.name, a.blurb, a.slug] as [string, 
 // Third element is the internal app-page path (deep dive + screenshots + demo),
 // which carries the Try-it-free CTA to the Marketplace listing.
 const atlassianApps: [string, string, string][] = [
-  ['Access Governance Reporter', 'Who can access what in Jira, per user and per group, with audit CSV', '/apps/jira-access-governance-reporter'],
-  ['Access Snapshot & Drift', 'Daily point-in-time project access snapshots, diffed for drift', '/apps/jira-access-snapshot-drift'],
-  ['Compliance Log Vault', 'Long-term Jira audit log retention with CSV export', '/apps/jira-audit-log-retention'],
-  ['Inactive-User Hygiene', 'Reclaim idle Jira seats from a read-only inactivity worklist', '/apps/jira-inactive-user-hygiene'],
-  ['Orphaned-Owner Cleanup', 'Reassign filters, dashboards, and issues owned by deactivated users', '/apps/jira-orphaned-owner-cleanup'],
-  ['Portal Governance for JSM', 'Per-desk portal access matrix with exposure flags', '/apps/jsm-portal-governance'],
-  ['Notification Log for JSM', 'A record of every outgoing customer notification', '/apps/jsm-notification-log'],
-  ['Assets Export Manager for JSM', 'Bulk-export a JSM Assets schema to CSV or JSON', '/apps/jsm-assets-export'],
-  ['Attachment Cleanup for Confluence', 'Find unused and orphaned attachments, total reclaimable storage', '/apps/confluence-attachment-cleanup'],
-  ['Page-Restriction Governance', 'Inventory every restricted Confluence page and who can reach it', '/apps/confluence-page-restriction-governance'],
+  ['Access Governance Reporter', 'Who can access what in Jira, per user and per group, with audit CSV', '/atlassian/jira-access-governance-reporter'],
+  ['Access Snapshot & Drift', 'Daily point-in-time project access snapshots, diffed for drift', '/atlassian/jira-access-snapshot-drift'],
+  ['Compliance Log Vault', 'Long-term Jira audit log retention with CSV export', '/atlassian/jira-audit-log-retention'],
+  ['Inactive-User Hygiene', 'Reclaim idle Jira seats from a read-only inactivity worklist', '/atlassian/jira-inactive-user-hygiene'],
+  ['Orphaned-Owner Cleanup', 'Reassign filters, dashboards, and issues owned by deactivated users', '/atlassian/jira-orphaned-owner-cleanup'],
+  ['Portal Governance for JSM', 'Per-desk portal access matrix with exposure flags', '/atlassian/jsm-portal-governance'],
+  ['Notification Log for JSM', 'A record of every outgoing customer notification', '/atlassian/jsm-notification-log'],
+  ['Assets Export Manager for JSM', 'Bulk-export a JSM Assets schema to CSV or JSON', '/atlassian/jsm-assets-export'],
+  ['Attachment Cleanup for Confluence', 'Find unused and orphaned attachments, total reclaimable storage', '/atlassian/confluence-attachment-cleanup'],
+  ['Page-Restriction Governance', 'Inventory every restricted Confluence page and who can reach it', '/atlassian/confluence-page-restriction-governance'],
 ];
 
 const llmgraphFeatures = [
@@ -48,7 +49,7 @@ const heroBg =
   'linear-gradient(160deg,#0a1636 0%,#122a63 58%,#20408f 100%)';
 ---
 <Base
-  title="Katabarwa Labs — a software company building focused products"
+  title="Katabarwa Labs | in-tenant Atlassian and Azure apps, and the LLMGraph AI platform"
   description="Katabarwa Labs is a software company that designs and operates its own products: LLMGraph, a no-code platform for building AI support agents from your docs, and a portfolio of in-tenant operational tools across the Azure, AWS, and Atlassian marketplaces."
 >
   <!-- hero -->
@@ -66,7 +67,7 @@ const heroBg =
       </p>
       <div class="mt-8 flex flex-wrap gap-3">
         <a href="#products" class="btn btn-primary">See our products</a>
-        <a href="mailto:abaho@llmgraph.ai" class="btn btn-ghost">Talk to us</a>
+        <a href="mailto:support@llmgraph.ai" class="btn btn-ghost">Talk to us</a>
       </div>
       <div class="mt-9 flex flex-wrap gap-x-6 gap-y-2 text-[14px] text-[#a9bce6]">
         {['Built and operated in-house', 'AI platform + marketplace apps', 'Enterprise-ready'].map((t) => (
@@ -197,7 +198,7 @@ const heroBg =
       <h3 class="mt-9 text-[13px] font-semibold uppercase tracking-[0.1em] text-muted">Microsoft Azure Marketplace · {azureApps.length} apps</h3>
       <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {azureApps.map(([name, blurb, slug]) => (
-          <a href={azureBase + slug} target="_blank" rel="noopener" class="group rounded-xl border border-line bg-white px-4 py-3.5 transition hover:border-brand">
+          <a href={withUtm(azureBase + slug, slug, 'home-azure-card')} {...track('azure', slug, 'home-azure-card')} target="_blank" rel="noopener" class="group rounded-xl border border-line bg-white px-4 py-3.5 transition hover:border-brand">
             <div class="flex items-center justify-between gap-2">
               <span class="font-bold text-ink group-hover:text-brand">{name}</span>
               <svg class="shrink-0 text-muted group-hover:text-brand" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7M9 7h8v8"/></svg>
@@ -242,7 +243,7 @@ const heroBg =
         <h2 class="text-[24px] font-extrabold tracking-[-0.02em]">Have a pain worth productizing?</h2>
         <p class="mt-1.5 text-muted">Tell us the admin chore you keep re-solving — it’s probably our next app.</p>
       </div>
-      <a href="mailto:abaho@llmgraph.ai" class="btn btn-primary">Email us</a>
+      <a href="mailto:support@llmgraph.ai" class="btn btn-primary">Email us</a>
     </div>
   </section>
 </Base>

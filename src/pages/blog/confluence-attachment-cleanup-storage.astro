@@ -1,7 +1,10 @@
 ---
 import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const listing = 'https://marketplace.atlassian.com/apps/1397083709/attachment-cleanup-for-confluence';
+const listingSlug = 'attachment-cleanup-for-confluence';
+const listing = withUtm('https://marketplace.atlassian.com/apps/1397083709/attachment-cleanup-for-confluence', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
 ---
 <BlogPost
   title="Find what is eating your Confluence storage and clean it up safely"
@@ -66,7 +69,7 @@ const listing = 'https://marketplace.atlassian.com/apps/1397083709/attachment-cl
 
   <h2>A ready-made option: Attachment Cleanup for Confluence</h2>
   <div class="callout">
-    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Attachment Cleanup for Confluence</a>
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Attachment Cleanup for Confluence</a>
     on the Atlassian Marketplace. It is built on Atlassian Forge and runs entirely on Atlassian's
     platform inside your own Confluence Cloud tenant, with no external servers and no data egress,
     which makes it eligible for the "Runs on Atlassian" trust badge.

@@ -87,6 +87,17 @@ Resources:
             };
           }
           var uri = req.uri;
+          // 2026-09: the Atlassian catalogue moved from /apps to /atlassian.
+          // Image assets stay under /apps/<slug>/*.png, so only redirect
+          // extensionless paths (page routes), never files.
+          if ((uri === '/apps' || uri === '/apps/' || uri.indexOf('/apps/') === 0) && uri.split('/').pop().indexOf('.') === -1) {
+            var rest = uri.replace(/^\/apps\/?/, '');
+            return {
+              statusCode: 301,
+              statusDescription: 'Moved Permanently',
+              headers: { location: { value: 'https://' + host + '/atlassian' + (rest ? '/' + rest : '') } }
+            };
+          }
           if (uri.endsWith('/')) { req.uri = uri + 'index.html'; }
           else if (uri.split('/').pop().indexOf('.') === -1) { req.uri = uri + '/index.html'; }
           return req;

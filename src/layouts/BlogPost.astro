@@ -1,5 +1,6 @@
 ---
 import Base from './Base.astro';
+import { blogPosting, breadcrumbs, isoDate } from '../lib/seo';
 
 interface Props {
   title: string;        // SEO <title> and H1
@@ -10,8 +11,14 @@ interface Props {
 }
 const { title, description, pubDate, tag = 'Azure', readMins } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const path = Astro.url.pathname.replace(base, '').replace(/\/$/, '') || '/';
+const published = isoDate(pubDate);
+const jsonLd = [
+  breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Blog', path: '/blog' }, { name: title, path }]),
+  blogPosting({ path, title, description, isoDate: published, tag }),
+];
 ---
-<Base title={`${title} — Katabarwa Labs`} description={description}>
+<Base title={`${title} | Katabarwa Labs`} description={description} ogType="article" publishedTime={published} jsonLd={jsonLd}>
   <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
     <div class="wrap pt-[52px] pb-[44px]">
       <a href={`${base}/blog`} class="text-[13px] font-semibold uppercase tracking-[0.14em] text-accent hover:text-white">
@@ -32,8 +39,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <hr class="my-10 border-line" />
     <p class="text-[14px] text-muted">
       Written by the team at <a class="text-brand" href={`${base}/`}>Katabarwa Labs</a>.
-      We build small, single-purpose Azure tools that run entirely inside your own tenant.
-      Questions: <a class="text-brand" href="mailto:abaho@llmgraph.ai">abaho@llmgraph.ai</a>.
+      We build small, single-purpose Atlassian and Azure tools that run entirely inside your own tenant.
+      Questions: <a class="text-brand" href="mailto:support@llmgraph.ai">support@llmgraph.ai</a>.
     </p>
   </main>
 </Base>

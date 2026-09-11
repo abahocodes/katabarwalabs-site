@@ -1,6 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import { atlassianApps } from '../../data/atlassianApps';
+import { collection, canonical } from '../../lib/seo';
+const jsonLd = collection({ path: '/atlassian', name: 'Atlassian Marketplace apps by Katabarwa Labs', description: 'Governance, audit, and hygiene apps for Jira, Jira Service Management, and Confluence Cloud, all running on Atlassian Forge inside your own tenant.', items: atlassianApps.map((a) => ({ name: a.name, url: canonical(`/atlassian/${a.slug}`) })) });
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const groups: [string, string][] = [
@@ -10,7 +12,8 @@ const groups: [string, string][] = [
 ];
 ---
 <Base
-  title="Atlassian Marketplace apps by Katabarwa Labs — Jira, JSM, and Confluence admin tools"
+  title="Atlassian Marketplace apps by Katabarwa Labs | Jira, JSM, and Confluence admin tools"
+  jsonLd={jsonLd}
   description="Ten single-purpose governance and audit apps for Jira, Jira Service Management, and Confluence Cloud. All run entirely on Atlassian Forge inside your own tenant: no external servers, no data egress."
 >
   <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
@@ -33,7 +36,7 @@ const groups: [string, string][] = [
       <p class="mt-1 text-[15px] text-muted">{blurb}</p>
       <div class="mt-5 grid gap-5 sm:grid-cols-2">
         {atlassianApps.filter((a) => a.product === product).map((a) => (
-          <a href={`${base}/apps/${a.slug}`} class="card block">
+          <a href={`${base}/atlassian/${a.slug}`} class="card block">
             <h3 class="text-[17px] font-bold text-ink">{a.name}</h3>
             <p class="mt-1.5 text-[14.5px] leading-relaxed text-ink2">{a.tagline}</p>
             <span class="mt-3 inline-block text-[14px] font-semibold text-brand">Learn more &rarr;</span>

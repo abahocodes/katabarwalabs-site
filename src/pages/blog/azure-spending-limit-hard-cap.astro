@@ -1,7 +1,10 @@
 ---
 import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const listing = 'https://marketplace.microsoft.com/en-us/product/katabarwalabs.cost-breaker';
+const listingSlug = 'cost-breaker';
+const listing = withUtm('https://marketplace.microsoft.com/en-us/product/katabarwalabs.cost-breaker', listingSlug, 'blog-post');
+const listingTrack = track('azure', listingSlug, 'blog-post');
 ---
 <BlogPost
   title="How to put a hard spending cap on Azure (and actually stop the bill)"
@@ -59,7 +62,7 @@ const listing = 'https://marketplace.microsoft.com/en-us/product/katabarwalabs.c
 
   <h2>A ready-made option: Cost Breaker</h2>
   <div class="callout">
-    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Cost Breaker</a>
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Cost Breaker</a>
     on the Azure Marketplace. It is a managed application that deploys into your own subscription, so
     nothing leaves your tenant and there is no vendor backend.
   </div>

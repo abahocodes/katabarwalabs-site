@@ -1,65 +1,42 @@
 import type { APIRoute } from 'astro';
+import { execSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
-// Dependency-free sitemap. Uses the configured `site` origin and the build-time
-// base (root '/' for the AWS/CloudFront prod build, '/katabarwalabs-site' on the
-// GitHub Pages preview), so the emitted URLs are correct for whichever target
-// this was built for.
+// Dependency-free sitemap generated from the pages that actually exist, so a
+// new app or blog post is never forgotten. lastmod is the last git commit that
+// touched the page (falls back to the build date for uncommitted files).
+// URLs use the production origin plus the build base so the preview build is
+// self-consistent, while every page's <link rel=canonical> still points at
+// katabarwalabs.dev.
 const origin = (import.meta.env.SITE ?? 'https://katabarwalabs.dev').replace(/\/$/, '');
-const base = import.meta.env.BASE_URL.replace(/\/$/, ''); // '' at root, '/katabarwalabs-site' on Pages
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-const paths = [
-  '/',
-  '/blog',
-  '/blog/azure-spending-limit-hard-cap',
-  '/blog/set-an-entra-id-account-to-expire',
-  '/blog/find-and-delete-orphaned-azure-resources',
-  '/blog/who-created-an-azure-resource-createdby-tag',
-  '/blog/just-in-time-azure-role-elevation-without-pim',
-  '/blog/azure-anomaly-detector-retirement-cost-spikes',
-  '/blog/entra-app-registration-secret-expiry-alerts',
-  '/blog/azure-tls-certificate-expiry-alerts',
-  '/blog/key-vault-expiring-secrets-digest',
-  '/blog/find-dangling-dns-records-azure',
-  '/blog/clean-up-stale-azure-rbac-assignments',
-  '/blog/detect-azure-custom-role-definition-changes',
-  '/blog/azure-storage-account-hygiene',
-  '/blog/azure-policy-exemptions-tracking',
-  '/blog/find-azure-resources-with-no-alerts',
-  '/blog/find-azure-vms-without-backup',
-  '/blog/keep-atlassian-audit-logs-beyond-retention',
-  '/blog/jira-group-usage-beyond-permission-schemes',
-  '/blog/export-jsm-assets-object-schema',
-  '/blog/jira-filters-dashboards-deactivated-owners',
-  '/blog/confluence-attachment-cleanup-storage',
-  '/blog/audit-jsm-portal-customer-access',
-  '/apps',
-  '/azure',
-  '/apps/jira-access-governance-reporter',
-  '/apps/jira-access-snapshot-drift',
-  '/apps/jira-audit-log-retention',
-  '/apps/jira-inactive-user-hygiene',
-  '/apps/jira-orphaned-owner-cleanup',
-  '/apps/jsm-portal-governance',
-  '/apps/jsm-notification-log',
-  '/apps/jsm-assets-export',
-  '/apps/confluence-attachment-cleanup',
-  '/apps/confluence-page-restriction-governance',
-  '/support',
-  '/privacy',
-];
+const pages = import.meta.glob('/src/pages/**/*.astro', { eager: false });
 
-const lastmod = '2026-09-03';
+function lastmod(file: string): string {
+  try {
+    const out = execSync(`git log -1 --format=%cI -- "${file}"`, { cwd: fileURLToPath(new URL('../../', import.meta.url)) }).toString().trim();
+    if (out) return out.slice(0, 10);
+  } catch {}
+  return new Date().toISOString().slice(0, 10);
+}
 
-const urls = paths
+const entries = Object.keys(pages)
+  .map((f) => f.replace(/^\/src\/pages/, '').replace(/\.astro$/, '').replace(/\/index$/, '') || '/')
+  .filter((p) => !p.startsWith('/404') && !p.includes('['))
+  .sort((a, b) => (a === '/' ? -1 : b === '/' ? 1 : a.localeCompare(b)))
   .map((p) => {
-    const loc = `${origin}${base}${p === '/' ? '/' : p}`;
-    return `  <url><loc>${loc}</loc><lastmod>${lastmod}</lastmod></url>`;
-  })
-  .join('\n');
+    const file = `src/pages${p === '/' ? '/index' : p}.astro`;
+    const alt = `src/pages${p}/index.astro`;
+    let mod = lastmod(file);
+    if (mod === new Date().toISOString().slice(0, 10)) mod = lastmod(alt);
+    const prio = p === '/' ? '1.0' : /^\/(atlassian|azure)$/.test(p) ? '0.9' : p.startsWith('/atlassian/') ? '0.8' : p.startsWith('/blog/') ? '0.6' : '0.5';
+    return `  <url><loc>${origin}${base}${p === '/' ? '/' : p}</loc><lastmod>${mod}</lastmod><priority>${prio}</priority></url>`;
+  });
 
 const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls}
+${entries.join('\n')}
 </urlset>
 `;
 

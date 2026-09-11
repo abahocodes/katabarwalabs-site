@@ -1,18 +1,32 @@
 ---
 import Base from './Base.astro';
 import type { AtlassianApp } from '../data/atlassianApps';
+import { withUtm, track } from '../lib/links';
+import { asset, breadcrumbs, softwareApp } from '../lib/seo';
 
 interface Props { app: AtlassianApp; }
 const { app } = Astro.props;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const img = (n: number) => `${base}/apps/${app.slug}/h${n}.png`;
+const path = `/atlassian/${app.slug}`;
+const shots = [1, 2, 3].map((n) => asset(`/apps/${app.slug}/h${n}.png`));
+// GA4 `app` and utm_campaign use the Marketplace listing slug so the app page,
+// the blog posts, and the hub all attribute clicks to the same product id.
+const listingSlug = new URL(app.listing).pathname.split('/').pop() ?? app.slug;
+const listing = withUtm(app.listing, listingSlug, 'app-page-hero');
+const listingFooter = withUtm(app.listing, listingSlug, 'app-page-footer');
+const docs = withUtm(app.docs, listingSlug, 'app-page-docs');
+const jsonLd = [
+  breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Atlassian apps', path: '/atlassian' }, { name: app.name, path }]),
+  softwareApp({ path, name: app.name, description: app.description, product: app.product, listing: app.listing, docs: app.docs, screenshots: shots, readOnly: !app.writes }),
+];
 ---
-<Base title={`${app.title} | ${app.name} by Katabarwa Labs`} description={app.description}>
+<Base title={`${app.title} | ${app.name} by Katabarwa Labs`} description={app.description} ogImage={shots[0]} ogType="product" jsonLd={jsonLd}>
   <!-- hero -->
   <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
     <div class="wrap pt-[56px] pb-[52px]">
-      <a href={`${base}/apps`} class="text-[13px] font-semibold uppercase tracking-[0.14em] text-accent hover:text-white">
-        &larr; All apps
+      <a href={`${base}/atlassian`} class="text-[13px] font-semibold uppercase tracking-[0.14em] text-accent hover:text-white">
+        &larr; All Atlassian apps
       </a>
       <p class="mt-4 text-[13px] font-semibold uppercase tracking-[0.14em] text-[#a9bce6]">{app.product} · {app.name}</p>
       <h1 class="mt-2 max-w-[820px] text-[clamp(26px,4vw,40px)] font-extrabold leading-[1.12] tracking-[-0.02em] text-white">
@@ -20,8 +34,8 @@ const img = (n: number) => `${base}/apps/${app.slug}/h${n}.png`;
       </h1>
       <p class="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-[#c8d6f7]">{app.tagline}</p>
       <div class="mt-7 flex flex-wrap items-center gap-3">
-        <a href={app.listing} target="_blank" rel="noopener" class="btn btn-primary">Try it free on the Atlassian Marketplace</a>
-        <a href={app.docs} target="_blank" rel="noopener" class="btn btn-ghost">Documentation</a>
+        <a href={listing} target="_blank" rel="noopener" class="btn btn-primary" {...track('atlassian', listingSlug, 'app-page-hero')}>Try it free on the Atlassian Marketplace</a>
+        <a href={docs} target="_blank" rel="noopener" class="btn btn-ghost" {...track('atlassian', listingSlug, 'app-page-docs')}>Documentation</a>
       </div>
       <p class="mt-4 text-[13px] text-[#a9bce6]">Runs entirely on Atlassian Forge inside your own tenant. No external servers, no data egress.</p>
     </div>
@@ -136,7 +150,7 @@ const img = (n: number) => `${base}/apps/${app.slug}/h${n}.png`;
         would and we will build it.
       </p>
       <div class="mt-6 flex flex-wrap justify-center gap-3">
-        <a href={app.listing} target="_blank" rel="noopener" class="btn btn-primary">Try it free</a>
+        <a href={listingFooter} target="_blank" rel="noopener" class="btn btn-primary" {...track('atlassian', listingSlug, 'app-page-footer')}>Try it free</a>
         {app.blog && <a href={`${base}${app.blog}`} class="btn btn-ghost">Read the deep-dive</a>}
       </div>
     </div>

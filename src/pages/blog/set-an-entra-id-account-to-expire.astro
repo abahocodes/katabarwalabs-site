@@ -1,7 +1,10 @@
 ---
 import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const listing = 'https://marketplace.microsoft.com/en-us/product/katabarwalabs.identity-lifecycle';
+const listingSlug = 'identity-lifecycle';
+const listing = withUtm('https://marketplace.microsoft.com/en-us/product/katabarwalabs.identity-lifecycle', listingSlug, 'blog-post');
+const listingTrack = track('azure', listingSlug, 'blog-post');
 ---
 <BlogPost
   title="How to set a Microsoft Entra ID account to expire on a date"
@@ -54,7 +57,7 @@ const listing = 'https://marketplace.microsoft.com/en-us/product/katabarwalabs.i
 
   <h2>A ready-made option: Identity Lifecycle</h2>
   <div class="callout">
-    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} target="_blank" rel="noopener">Identity Lifecycle</a>
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Identity Lifecycle</a>
     on the Azure Marketplace. It deploys into your own tenant as a managed application, so nothing
     leaves your environment and there is no vendor backend.
   </div>
