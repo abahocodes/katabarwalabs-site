@@ -64,6 +64,21 @@ GitHub. The workflow only ships content; stack, certificate and DNS changes stil
 To ship: commit to `main` and push. Watch with `gh run watch` or the Actions tab; the production
 environment URL on the run is https://katabarwalabs.dev/.
 
+### Search engines after each deploy (`tools/seo-notify.py`)
+
+The last workflow step tells search engines what changed:
+
+- **IndexNow** (Bing, Yandex, DuckDuckGo, Naver): the key is the 32-hex `public/<key>.txt` file;
+  the step posts the URLs whose page source changed in the push (all sitemap URLs on a
+  `workflow_dispatch` run or when layouts/data/lib changed). No secret.
+- **Google Search Console**: resubmits `/sitemap.xml` and runs URL Inspection on the changed URLs,
+  printing verdict, coverage state and last crawl in the run summary. Needs the
+  `GSC_SERVICE_ACCOUNT_JSON` repository secret (a service-account key whose email is added as a
+  Full user on the `sc-domain:katabarwalabs.dev` property). Without the secret the step logs
+  "skipped" and the deploy still passes. Google's sitemap ping endpoint is gone (2023) and the
+  Indexing API is not allowed for ordinary pages, so sitemap + inspection is the whole automatable
+  surface; a fresh page still gets indexed on Google's own schedule.
+
 ## 4. Analytics and SEO conventions (added 2026-09-10)
 
 **Information architecture.** Platform-first, the way multi-platform Marketplace vendors do it:

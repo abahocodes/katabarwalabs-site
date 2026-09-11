@@ -66,3 +66,19 @@ jobs:
           sleep 20
           curl -sSf -o /dev/null -w 'home %{http_code}\n' https://katabarwalabs.dev/
           curl -sSf https://katabarwalabs.dev/sitemap.xml | grep -c '<loc>'
+
+      # Tell search engines what changed: IndexNow (Bing and friends, key file in
+      # public/) and Google Search Console (sitemap resubmit + URL inspection of
+      # the changed pages, needs the GSC_SERVICE_ACCOUNT_JSON secret; skipped
+      # cleanly when absent). See tools/seo-notify.py.
+      - name: Notify search engines
+        if: success()
+        env:
+          SITE: https://katabarwalabs.dev
+          EVENT_NAME: ${{ github.event_name }}
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.sha }}
+          GSC_SERVICE_ACCOUNT_JSON: ${{ secrets.GSC_SERVICE_ACCOUNT_JSON }}
+        run: |
+          pip install -q google-auth
+          python3 tools/seo-notify.py
