@@ -6,8 +6,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const jsonLd = [breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Security', path: '/security' }])];
 ---
 <Base
-  title="Security | how Katabarwa Labs apps handle your data"
-  description="Every Katabarwa Labs app runs inside your own tenant. Atlassian apps run on Forge with no external servers; Azure apps deploy as managed applications in your subscription. What we can and cannot see, the scopes we ask for, and how to reach us."
+  title="Security policy | how Katabarwa Labs apps handle your data"
+  description="Every Katabarwa Labs app runs inside your own tenant. Atlassian apps run on Forge with no external servers; Azure apps deploy as managed applications in your subscription. What we can and cannot see, the scopes we ask for, our secure development practices, vulnerability disclosure process, and 48-hour incident notification commitment."
   jsonLd={jsonLd}
 >
   <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
@@ -64,14 +64,62 @@ const jsonLd = [breadcrumbs([{ name: 'Home', path: '/' }, { name: 'Security', pa
     </div>
   </section>
 
+  <section class="wrap pt-12">
+    <span class="eyebrow">Security policy</span>
+    <h2 class="mt-2 text-[22px] font-extrabold text-ink">Secure development practices</h2>
+    <p class="mt-3 max-w-[72ch] text-[16px] text-ink2">
+      This is our published security policy. It backs the answers on every Marketplace listing's Privacy and Security tab and is reviewed at least annually. Last reviewed: September 2026.
+    </p>
+    <ul class="mt-4 max-w-[72ch] list-disc space-y-2 pl-6 text-[16px] text-ink2">
+      <li><strong>Least privilege by design.</strong> Every app requests the fewest scopes it can, read-only wherever possible. Each write scope is documented in the app manifest with the exact endpoint that needs it and why.</li>
+      <li><strong>No secrets in code.</strong> Apps hold no API keys, tokens, or credentials. Authentication is delegated to Atlassian (Forge) or to the customer's own managed identity (Azure). Nothing sensitive is written to logs.</li>
+      <li><strong>Tested before every release.</strong> Strict TypeScript, a unit test suite per app that runs before each deploy, and Forge manifest linting. A release does not ship with failing tests.</li>
+      <li><strong>Dependencies kept minimal and current.</strong> Software composition analysis (<code>npm audit</code>) runs on every dependency change; critical and high findings are fixed before the next deploy. Atlassian's Ecoscanner and Forge security checks run against every published version and we resolve their findings within Atlassian's required timelines.</li>
+      <li><strong>Built and shipped from controlled accounts.</strong> UI bundles are built locally and served by the platform, not from third-party CDNs. Developer, Marketplace, and source control accounts require multi-factor authentication; deploy credentials are per-purpose and rotated or revoked when no longer needed.</li>
+      <li><strong>Data minimisation.</strong> Apps store only the derived report data they need, in storage owned by the customer's tenant and encrypted at rest by the platform. Uninstalling the app removes it.</li>
+    </ul>
+  </section>
+
+  <section class="wrap pt-12">
+    <h2 class="text-[22px] font-extrabold text-ink">Vulnerability disclosure</h2>
+    <p class="mt-3 max-w-[72ch] text-[16px] text-ink2">
+      We want to hear about security issues in any Katabarwa Labs app. Send reports to
+      <a href="mailto:support@llmgraph.ai" class="font-semibold text-brand">support@llmgraph.ai</a> with the app name,
+      the affected version if known, and steps to reproduce. This is the same security contact listed on every Marketplace listing.
+    </p>
+    <ul class="mt-4 max-w-[72ch] list-disc space-y-2 pl-6 text-[16px] text-ink2">
+      <li><strong>Acknowledgement within 2 business days.</strong> You will get a reply confirming receipt and a tracking reference.</li>
+      <li><strong>Triage and severity.</strong> We assess each report and rate it using CVSS. We will tell you our rating and the planned fix window.</li>
+      <li><strong>Fix timelines follow Atlassian's Security Bug Fix Policy.</strong> Critical issues are fixed as a priority, and in every case within the timelines that policy sets for Marketplace apps. Forge apps update automatically for all customers once a fix is published, so no customer action is needed.</li>
+      <li><strong>Safe harbour.</strong> Good-faith research that avoids privacy violations, data destruction, and service disruption, and that gives us reasonable time to fix before public disclosure, will not be met with legal action. Please do not test against Atlassian sites or Azure subscriptions you do not own.</li>
+      <li><strong>Credit.</strong> We are glad to credit reporters in release notes if they wish.</li>
+    </ul>
+  </section>
+
+  <section class="wrap pt-12">
+    <h2 class="text-[22px] font-extrabold text-ink">Incident response commitment</h2>
+    <p class="mt-3 max-w-[72ch] text-[16px] text-ink2">
+      If we confirm a security incident affecting a Katabarwa Labs app, we commit to notifying Atlassian and every affected customer
+      <strong>within 48 hours of confirming the incident</strong>, and to keeping them updated until it is resolved. Our incident response plan:
+    </p>
+    <ol class="mt-4 max-w-[72ch] list-decimal space-y-2 pl-6 text-[16px] text-ink2">
+      <li><strong>Detect and triage.</strong> Within 24 hours of becoming aware of a possible incident we confirm whether it is real, which apps and versions are affected, and whether any customer data could have been exposed.</li>
+      <li><strong>Contain.</strong> Publish a patched version or withdraw the affected version from the Marketplace. Because our apps run inside the customer's own tenant with no servers of ours in the path, there is no Katabarwa Labs infrastructure to isolate.</li>
+      <li><strong>Notify within 48 hours.</strong> Report the confirmed incident to Atlassian through the Ecosystem security process and email every affected customer's listed contacts, describing what happened, what data or functionality was affected, what we have done, and what, if anything, they need to do.</li>
+      <li><strong>Remediate and verify.</strong> Fix the root cause, test it, redeploy, and confirm the fix with the reporter where one exists.</li>
+      <li><strong>Learn.</strong> Write a post-incident summary with timeline, root cause, and the change that prevents a repeat, and update this policy if a control failed.</li>
+    </ol>
+    <p class="mt-4 max-w-[72ch] text-[16px] text-ink2">
+      Where a law or an Atlassian or Microsoft partner agreement requires a shorter notification window, the shorter window applies.
+    </p>
+  </section>
+
   <section class="wrap pb-16 pt-12">
     <div class="rounded-2xl border border-line bg-soft px-8 py-8">
-      <h2 class="text-[19px] font-bold text-ink">Reporting a vulnerability</h2>
+      <h2 class="text-[19px] font-bold text-ink">Security contact</h2>
       <p class="mt-2 max-w-[68ch] text-[15px] text-ink2">
-        Write to <a href="mailto:support@llmgraph.ai" class="font-semibold text-brand">support@llmgraph.ai</a>.
-        We acknowledge reports promptly, fix confirmed issues in line with Atlassian's Marketplace security bug fix
-        policy, and notify affected customers and Atlassian when an incident warrants it. The same address is the
-        security contact on every Marketplace listing.
+        <a href="mailto:support@llmgraph.ai" class="font-semibold text-brand">support@llmgraph.ai</a> for vulnerability reports,
+        security questionnaires, and incident questions. Our privacy policy is at <a href="/privacy" class="font-semibold text-brand">katabarwalabs.dev/privacy</a>.
       </p>
     </div>
   </section>
