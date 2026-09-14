@@ -483,6 +483,43 @@ export const atlassianApps: AtlassianApp[] = [
       { label: 'Export search results', url: 'https://support.atlassian.com/jira-software-cloud/docs/export-search-results/' },
     ],
   },
+  {
+    slug: 'confluence-crisp-diagrams',
+    name: 'Crisp Diagrams',
+    product: 'Confluence',
+    title: 'Mermaid, PlantUML, D2, DBML and Excalidraw diagrams in Confluence Cloud',
+    tagline: 'Five diagram languages, one free app: sharp SVG that fits the page, click to zoom, live preview, dark mode, and images in PDF and Word exports.',
+    description: 'Crisp Diagrams renders Mermaid, PlantUML, D2, DBML and Excalidraw in your browser inside Confluence Cloud: zoomable SVG, live preview with line-numbered errors, dark mode, paste from AI chats and mermaid.live, and rendered images in PDF exports. Free, runs on Atlassian.',
+    problem: 'Diagram macros for Confluence tend to ship a blurry fixed-size image, break in PDF exports, need a render server or an account, lag years behind the engine, or handle only one language. Teams end up with three diagram apps and a folder of screenshots.',
+    features: [
+      'Mermaid 12, PlantUML 1.2026 (in the browser, no Graphviz), D2, DBML and Excalidraw, each as its own macro with a language switch.',
+      'Vector SVG that fills the page; click for full screen with scroll-to-zoom and drag-to-pan.',
+      'Live preview while you type, resizable split, starter templates, errors that name the line.',
+      'Paste a fenced code block from an AI chat or README, or a mermaid.live, plantuml.com or Kroki link, and it just works.',
+      'Follows Confluence light and dark themes unless the diagram pins its own.',
+      'PDF and Word exports show the rendered diagram: a PNG is attached to the page on save.',
+      'No account, no diagram limit, no external servers. Free.',
+    ],
+    captions: [
+      'Mermaid, PlantUML, D2, DBML and Excalidraw side by side on one page, all rendered as SVG.',
+      'The editor: live preview, language switch, starter templates, errors with a line number.',
+      'Full-screen view with zoom and pan, and the same diagram inside a PDF export.',
+    ],
+    honest: [
+      'Very large PlantUML sprite packs (AWS, IBM, Material, tupadr3, logos, office, osa) are not bundled; C4, Kubernetes, Azure, GCP, Elastic and ArchiMate are.',
+      'Each text diagram is capped at 50,000 characters, the same limit Mermaid applies.',
+      'Confluence only for now. A Jira issue panel is on the roadmap.',
+    ],
+    scopes: [
+      { scope: 'storage:app', why: 'drawings over about 200 KB are stored in Forge storage inside your tenant' },
+      { scope: 'read:content-details:confluence / write:attachment:confluence', why: 'attaching the diagram PNG to the page on save, as you, so exports show the image' },
+      { scope: 'read:attachment:confluence', why: 'the export function looks up that PNG when Confluence builds a PDF or Word export' },
+    ],
+    writes: 'On save, the editor attaches one PNG per diagram to the page (re-versioned on each change) so PDF and Word exports include the rendered image. That is the only write.',
+    youtube: null,
+    listing: 'https://marketplace.atlassian.com/vendors/524654952',
+    docs: docsBase + 'crisp-diagrams.md',
+  },
 ];
 
 export const bySlug = Object.fromEntries(atlassianApps.map((a) => [a.slug, a]));
