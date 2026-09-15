@@ -6,7 +6,7 @@ const jsonLd = collection({ path: '/atlassian', name: 'Atlassian Marketplace app
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const groups: [string, string][] = [
-  ['Jira', 'Access governance, audit retention, and license hygiene for Jira Cloud.'],
+  ['Jira', 'Access governance, audit retention, license hygiene, and ticket-to-PR dispatch for Jira Cloud.'],
   ['Jira Service Management', 'Portal access, notification evidence, and Assets export for JSM.'],
   ['Confluence', 'Attachment storage and page-restriction governance for Confluence Cloud.'],
 ];
@@ -14,7 +14,7 @@ const groups: [string, string][] = [
 <Base
   title="Atlassian Marketplace apps by Katabarwa Labs | Jira, JSM, and Confluence admin tools"
   jsonLd={jsonLd}
-  description="Eleven single-purpose governance and audit apps for Jira, Jira Service Management, and Confluence Cloud. All run entirely on Atlassian Forge inside your own tenant: no external servers, no data egress."
+  description="Twelve single-purpose apps for Jira, Jira Service Management, and Confluence Cloud: governance, audit, hygiene, and ticket-to-PR dispatch. All run on Atlassian Forge inside your own tenant with no vendor servers."
 >
   <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
     <div class="wrap pt-[56px] pb-[52px]">
@@ -23,9 +23,9 @@ const groups: [string, string][] = [
         Small apps that answer the questions Jira and Confluence cannot.
       </h1>
       <p class="mt-4 max-w-[62ch] text-[17px] leading-relaxed text-[#c8d6f7]">
-        Governance, audit, and hygiene tools. Each one does a single job well, runs entirely on
-        Atlassian Forge inside your own tenant, and exports audit-ready CSV. No external servers,
-        no data egress.
+        Governance, audit, and hygiene tools. Each one does a single job well, runs on Atlassian
+        Forge inside your own tenant, and exports audit-ready CSV. No vendor servers. Eleven of the
+        twelve have zero data egress; Agent Dispatch talks only to your own GitHub or GitLab.
       </p>
     </div>
   </section>

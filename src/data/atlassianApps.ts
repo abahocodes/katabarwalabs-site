@@ -22,6 +22,7 @@ export interface AtlassianApp {
   origin?: { ticket: string; title: string; votes: string }; // the public Atlassian request this app answers
   community?: string;   // our App Central article on community.atlassian.com, once live
   atlassianDocs?: { label: string; url: string }[];  // Atlassian's own docs for the native feature involved
+  egress?: { hosts: string[]; what: string };  // set only for apps that call out of the tenant; absent means zero egress (Runs on Atlassian)
 }
 
 const docsBase = 'https://github.com/abahocodes/katabarwalabs-docs/blob/master/';
@@ -481,6 +482,55 @@ export const atlassianApps: AtlassianApp[] = [
       { label: 'Archive a project', url: 'https://support.atlassian.com/jira-cloud-administration/docs/archive-a-project/' },
       { label: 'Move a project to trash', url: 'https://support.atlassian.com/jira-cloud-administration/docs/move-a-project-to-trash/' },
       { label: 'Export search results', url: 'https://support.atlassian.com/jira-software-cloud/docs/export-search-results/' },
+    ],
+  },
+  {
+    slug: 'jira-agent-dispatch',
+    name: 'Agent Dispatch for Jira',
+    product: 'Jira',
+    title: 'Send a Jira issue to Claude Code or Codex in your own CI, and get the pull request back on the ticket',
+    tagline: 'One button on the issue fires your GitHub Actions or GitLab CI. The agent runs with your API key on your runners, and the PR link and status come back to the issue.',
+    description: 'Agent Dispatch for Jira adds a Send to agent button to every issue. It fires your own GitHub Actions or GitLab CI, where Claude Code or Codex implements the work item with your API key, and posts the pull request link and run status back on the issue. Per-project repo mapping, daily cap, audit CSV. No vendor servers.',
+    problem: 'The assign-to-agent connectors on the Marketplace run the agent on the vendor\'s infrastructure, speak GitHub only, ignore the base branch, and make you type the repository into a chat box every time. Engineering teams that want ticket-to-PR automation end up choosing between a vendor holding their code and keys, or no automation at all. GitLab shops get no choice.',
+    features: [
+      'Send to agent button in the issue panel, with live run status (queued, running, succeeded, failed) and a history of runs for that issue.',
+      'Configured once per project: repository, base branch, provider and agent live in Project settings, not in the request.',
+      'GitHub Actions via repository_dispatch and GitLab CI via pipeline trigger tokens. Same button, same payload, same result flow.',
+      'Ready-made workflow templates for Claude Code and Codex: paste one file into the repo, add your API key as a CI secret, done.',
+      'Reuses an existing ISSUE-KEY branch when one exists instead of cutting a new one.',
+      'The PR or MR link and outcome come back on the issue as a panel update and a comment.',
+      'Governance an admin can sign off on: site-wide daily run cap, per-project allowlist, and an audit log of every dispatch with CSV export.',
+    ],
+    captions: [
+      'The issue panel: one click sends the work item to your CI, and the run status and pull request link come back on the issue.',
+      'Project settings: repository, base branch, provider and agent, configured once, with a live check of the repository setup.',
+      'The result: a pull request opened by your own GitHub Actions, on your base branch, ready to review.',
+    ],
+    honest: [
+      'This app has network egress by design: it calls api.github.com and gitlab.com to start your pipeline. It is therefore not in the Runs on Atlassian program, unlike the rest of our portfolio.',
+      'Self-managed GitHub Enterprise Server and self-hosted GitLab are not supported yet; Forge egress is declared per domain.',
+      'There is no native "assign to agent" slot in Jira for third-party apps. The panel button and the result comment are the equivalent.',
+      'The CI job reports back through a per-run, single-use token. It never holds Jira credentials.',
+      'Claude Code is a trademark of Anthropic, PBC. Codex is a trademark of OpenAI. Names are used only to state compatibility; the app is not affiliated with Anthropic, OpenAI, GitHub or GitLab.',
+    ],
+    scopes: [
+      { scope: 'read:jira-work', why: 'the summary, description and key of the issue being dispatched, and the issue panel context' },
+      { scope: 'write:jira-work', why: 'the one result comment written back onto the originating issue' },
+      { scope: 'storage:app', why: 'project mappings, governance settings, run records and the audit log; CI credentials in Forge secret storage, write-only' },
+    ],
+    writes: 'On each dispatch the app writes one comment on the originating issue with the outcome and the PR or MR link. It never edits fields, transitions issues or touches other issues.',
+    youtube: null,
+    listing: 'https://marketplace.atlassian.com/apps/3364619758/agent-dispatch-for-jira',
+    docs: docsBase + 'agent-dispatch.md',
+    blog: '/blog/send-jira-issue-to-coding-agent-in-your-own-ci',
+    egress: {
+      hosts: ['api.github.com', 'gitlab.com'],
+      what: 'the summary and description of an issue someone explicitly dispatched, sent to the CI pipeline you configured for that project. Nothing is sent anywhere else, and we host no servers.',
+    },
+    atlassianDocs: [
+      { label: 'Forge external egress permissions', url: 'https://developer.atlassian.com/platform/forge/manifest-reference/permissions/#external-permissions' },
+      { label: 'GitHub: repository_dispatch event', url: 'https://docs.github.com/en/rest/repos/repos#create-a-repository-dispatch-event' },
+      { label: 'GitLab: pipeline trigger tokens', url: 'https://docs.gitlab.com/ee/ci/triggers/' },
     ],
   },
   {

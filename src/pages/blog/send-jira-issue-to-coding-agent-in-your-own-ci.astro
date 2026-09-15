@@ -1,0 +1,147 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'agent-dispatch-for-jira';
+const listing = withUtm('https://marketplace.atlassian.com/apps/3364619758/agent-dispatch-for-jira', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="How to send a Jira issue to Claude Code or Codex in your own CI, and get the PR back on the ticket"
+  description="The assign-to-agent connectors run the agent on their servers and speak GitHub only. Here is the repository_dispatch and pipeline-trigger method that keeps your code and API keys in your own CI, and an in-tenant app that packages it."
+  tag="Jira for engineering teams"
+  pubDate="September 15, 2026"
+  readMins={7}
+  app="jira-agent-dispatch"
+  image="/apps/jira-agent-dispatch/h1.png"
+>
+  <p>
+    Ticket-to-pull-request is the fastest-growing category on the Atlassian Marketplace. Click a
+    button on a Jira issue, a coding agent reads the description, and a pull request shows up a few
+    minutes later. The connectors that do this have tens of thousands of installs between them and,
+    if you read their reviews, the same four complaints: the agent runs on the vendor's
+    infrastructure with access to your repository, GitLab is not supported, the repository has to
+    be typed into a chat box on every request, and the base branch is ignored. Enterprises add a
+    fifth: nobody can say who dispatched what, with whose credentials, against which repo.
+  </p>
+  <p>
+    None of that is inherent to the idea. Your CI already knows how to check out a branch, run a
+    command with a secret, push, and open a pull request. The only thing missing is a trustworthy
+    way to fire it from a Jira issue and get the result back. This post walks through the do-it-
+    yourself version, where the pieces get awkward, and an in-tenant app that packages the pattern.
+  </p>
+
+  <h2>Why the hosted connectors have the trust model backwards</h2>
+  <ul>
+    <li><strong>Your code and your API key leave your control.</strong> A hosted agent needs read
+      and write access to the repository and a model API key. Both live on the vendor's side,
+      under the vendor's retention and incident policies, not yours.</li>
+    <li><strong>GitHub only.</strong> Most connectors integrate with GitHub's app model. GitLab
+      shops, which are a large share of regulated engineering teams, are simply locked out.</li>
+    <li><strong>Per-request configuration.</strong> Because the connector has no per-project
+      memory, the repository and branch get re-stated in the prompt every time, and get wrong every
+      few times.</li>
+    <li><strong>No governance surface.</strong> There is no cap on runs, no allowlist of projects,
+      and no audit log an admin can export when someone asks how much agent spend a team produced.</li>
+  </ul>
+
+  <h2>The DIY approach: fire your own pipeline from Jira</h2>
+  <p>
+    Everything you need already exists on both sides. On the Jira side, an Automation rule can send
+    a web request when someone adds a label or transitions an issue. On the CI side, GitHub Actions
+    exposes the <code>repository_dispatch</code> event and GitLab exposes pipeline trigger tokens.
+    The recipe, for GitHub:
+  </p>
+  <ul>
+    <li>Create a fine-grained personal access token with <code>contents: write</code> on the target
+      repository, and store it in the Automation rule's web-request step.</li>
+    <li>In the rule, <code>POST https://api.github.com/repos/OWNER/REPO/dispatches</code> with a
+      body like <code>&#123;"event_type":"agent","client_payload":&#123;"issueKey":"&#123;&#123;issue.key&#125;&#125;","summary":"&#123;&#123;issue.summary&#125;&#125;","description":"&#123;&#123;issue.description&#125;&#125;"&#125;&#125;</code>.</li>
+    <li>Add a workflow triggered <code>on: repository_dispatch</code> that checks out the base branch
+      with <code>persist-credentials: false</code>, creates a branch named after the issue key, runs
+      the agent non-interactively (for example <code>claude -p "$PROMPT"</code> with
+      <code>ANTHROPIC_API_KEY</code> from repository secrets, or the Codex CLI with its key), commits,
+      pushes, and runs <code>gh pr create</code>.</li>
+    <li>Enable "Allow GitHub Actions to create and approve pull requests" under the repository's
+      Actions settings, or the last step fails with "not permitted".</li>
+    <li>Report back: a final step calls the Jira REST API to add a comment with the PR link. That
+      needs a Jira API token stored as a second CI secret.</li>
+  </ul>
+  <p>
+    GitLab is the same shape with different verbs: a pipeline trigger token, a <code>POST</code> to
+    <code>/projects/ID/trigger/pipeline</code> with the issue fields as variables, and a job that
+    uses <code>glab mr create</code> or the Merge Requests API.
+  </p>
+
+  <h2>Where the DIY version gets awkward</h2>
+  <ul>
+    <li><strong>Secrets in the wrong place.</strong> The GitHub token lives inside a Jira Automation
+      rule, readable by anyone who can edit rules in that project, and a Jira API token lives in CI
+      so the pipeline can comment back. Two long-lived credentials, each on the side that should not
+      hold it.</li>
+    <li><strong>One rule per project per repository.</strong> The repository, base branch, and
+      provider are baked into the rule. Ten projects means ten rules to keep in sync.</li>
+    <li><strong>Status is a comment, at best.</strong> There is no queued, running, or failed state
+      on the issue, and a pipeline that dies before its last step leaves the ticket silent
+      forever.</li>
+    <li><strong>Prompt injection through the shell.</strong> Issue text reaching a
+      <code>run:</code> step through <code>$&#123;&#123; &#125;&#125;</code> interpolation is a
+      command-injection bug. It has to go through environment variables, and someone has to know
+      that.</li>
+    <li><strong>No cap, no allowlist, no audit.</strong> Any rule editor can wire any project to any
+      repository, and the only record of runs is scattered across Actions logs.</li>
+  </ul>
+
+  <h2>A ready-made option: Agent Dispatch for Jira</h2>
+  <div class="callout">
+    <strong>Our tool for this:</strong> <a class="text-brand font-semibold" href={listing} {...listingTrack} target="_blank" rel="noopener">Agent Dispatch for Jira</a>
+    on the Atlassian Marketplace. It is built on Atlassian Forge and runs inside your Jira Cloud
+    tenant. Its only network calls go to api.github.com and gitlab.com, your own CI control planes.
+    We host no servers and never see your code or keys.
+  </div>
+  <p>
+    Agent Dispatch is the DIY pattern with the awkward parts removed. A Send to agent button in the
+    issue panel packages the work item and fires the pipeline you configured for that project,
+    GitHub Actions through <code>repository_dispatch</code> or GitLab CI through a trigger token.
+    Repository, base branch, provider, and agent are set once in Project settings, so nobody types
+    them per request, and an existing ISSUE-KEY branch is reused when one exists. Workflow templates
+    for Claude Code and Codex ship in the admin page: paste one file into the repo and add your
+    model API key as a CI secret. The pipeline reports back through a per-run, single-use callback
+    token, so the CI job never holds Jira credentials, and your GitHub or GitLab dispatch credential
+    sits in Forge secret storage, write-only. Status (queued, running, succeeded, failed) and the PR
+    or MR link land on the issue as a panel update and a comment, and an hourly reaper marks runs
+    whose pipeline never reported back as failed instead of stranding them. Admins get a site-wide
+    daily run cap, a per-project allowlist, and an audit log of every dispatch with CSV export.
+  </p>
+  <p>
+    Two honest notes. This app has egress by design, so unlike the rest of our portfolio it is not
+    in the Runs on Atlassian program; what leaves your tenant is the summary and description of an
+    issue someone chose to dispatch, sent to the CI you configured. And self-managed GitHub
+    Enterprise Server or self-hosted GitLab are not supported yet, because Forge declares egress per
+    domain.
+  </p>
+
+  <h2>Key facts</h2>
+  <ul>
+    <li><strong>Hosted connectors:</strong> agent runs on the vendor's infrastructure with your repo
+      access and API key; GitHub only; repo re-typed per request.</li>
+    <li><strong>DIY route:</strong> Jira Automation web request to <code>repository_dispatch</code>
+      or a GitLab trigger token, a workflow that runs the agent CLI and opens the PR, and a REST call
+      back to Jira.</li>
+    <li><strong>DIY costs:</strong> two long-lived secrets on the wrong sides, one rule per project,
+      no run state on the issue, shell-injection risk from issue text, no cap or audit.</li>
+    <li><strong>Durable fix:</strong> per-project mapping stored in the tenant, dispatch from the
+      issue, tokened callback, live status and PR link on the ticket, cap and audit CSV for
+      admins.</li>
+  </ul>
+
+  <p class="mt-6">
+    Related reading:
+    <a class="text-brand" href={`${base}/blog/jira-group-usage-beyond-permission-schemes`}>where groups hide in Jira, and how to audit them all</a>.
+  </p>
+  <p class="mt-4 text-[13px] text-muted">
+    Claude Code is a trademark of Anthropic, PBC. Codex is a trademark of OpenAI. Names are used
+    only to state compatibility; Katabarwa Labs is not affiliated with Anthropic, OpenAI, GitHub, or
+    GitLab.
+  </p>
+</BlogPost>
