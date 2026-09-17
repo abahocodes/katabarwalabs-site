@@ -1,0 +1,100 @@
+---
+import Base from '../../layouts/Base.astro';
+
+// Demo recordings for the monday.com marketplace submission. Each is an
+// unedited screen capture: the app being installed on a real account, then used.
+export const apps = {
+  'workday-blocks': {
+    name: 'Workday Blocks',
+    tagline: 'Working days for monday workflows',
+    blurb:
+      'monday’s automations count calendar days. Workday Blocks counts working days, skipping weekends and the holidays of the calendar you pick.',
+    shows: [
+      'Installing the app on a monday account',
+      'Its five blocks in the workflow builder, under Apps',
+      'Configuring “Set date to N working days after another date”',
+      'The working-day calendars, served by the app itself as a custom field type',
+    ],
+  },
+  'board-hygiene': {
+    name: 'Board Hygiene',
+    tagline: 'Find and fix what rotted',
+    blurb:
+      'Stale, overdue, unassigned, undated and duplicate items, found in one pass and fixed only on your confirmation. Every run is a dry run until you say otherwise.',
+    shows: [
+      'Installing the app on a monday account',
+      'Its blocks in the workflow builder, under Apps',
+      'The audit block’s settings: what counts as stale, and which columns to read',
+    ],
+  },
+  'board-backup': {
+    name: 'Board Backup',
+    tagline: 'Snapshots into your own cloud',
+    blurb:
+      'Nightly snapshots of the boards you choose into storage you already own, and a restore that shows its plan before it writes anything.',
+    shows: [
+      'Installing the app on a monday account',
+      'Its blocks in the workflow builder, under Apps',
+      'The backup block’s settings',
+    ],
+  },
+  'excalidraw-sketch': {
+    name: 'Excalidraw Sketch',
+    tagline: 'Hand-drawn whiteboards on your boards',
+    blurb:
+      'A whiteboard per board or item, autosaved into monday’s own app storage, plus a sidekick skill that draws a flow you describe.',
+    shows: [
+      'Installing the app on a monday account',
+      'The board view: a diagram the app drew from “draft, review, approve, publish”, saved into the board’s sketch',
+      'Its block in the workflow builder, under Apps',
+    ],
+  },
+};
+
+export function getStaticPaths() {
+  return Object.keys(apps).map((slug) => ({ params: { slug } }));
+}
+
+const { slug } = Astro.params;
+const app = apps[slug];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+<Base
+  title={`${app.name} demo | Katabarwa Labs`}
+  description={`A screen recording of ${app.name} being installed and used on monday.com.`}
+>
+  <section class="bg-[linear-gradient(160deg,#0a1636,#152f6b)] text-[#eaf0ff]">
+    <div class="wrap pt-[52px] pb-[46px]">
+      <div class="text-[13px] uppercase tracking-[0.14em] text-[#a9bce6]">monday.com app demo</div>
+      <h1 class="mt-2 text-[clamp(26px,4vw,36px)] font-extrabold tracking-[-0.02em] text-white">{app.name}</h1>
+      <p class="mt-2 text-[15px] text-[#a9bce6]">{app.tagline}</p>
+    </div>
+  </section>
+
+  <main class="mx-auto max-w-[960px] px-6 pt-11 pb-[72px]">
+    <video
+      class="w-full rounded-xl border border-black/10 bg-black shadow-[0_30px_80px_-40px_rgba(20,24,33,.55)]"
+      src={`${base}/monday/${slug}.mp4`}
+      poster={`${base}/monday/${slug}.jpg`}
+      controls
+      playsinline
+      preload="metadata"
+    ></video>
+
+    <div class="prose-page mt-10">
+      <p>{app.blurb}</p>
+
+      <h2>What the recording shows</h2>
+      <ul>
+        {app.shows.map((s) => <li>{s}</li>)}
+      </ul>
+
+      <p class="text-[15px] text-[#5b6270]">
+        Recorded on a real monday.com account with no edits and no narration. Support:
+        <a class="text-brand" href="mailto:support@llmgraph.ai">support@llmgraph.ai</a> ·
+        <a class="text-brand" href={`${base}/terms`}>Terms</a> ·
+        <a class="text-brand" href={`${base}/privacy`}>Privacy</a>
+      </p>
+    </div>
+  </main>
+</Base>
