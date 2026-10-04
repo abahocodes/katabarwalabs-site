@@ -1,0 +1,100 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'page-approvals-for-confluence';
+const listing = withUtm('https://marketplace.atlassian.com/apps/2615281760/page-approvals-for-confluence', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="Document control in Confluence: proving a page was approved, and noticing when it changes"
+  description="A label saying approved is evidence of something that stopped being true. Why approval has to be pinned to a version, what an auditor actually asks for, and how to build it with content properties and CQL."
+  tag="Confluence administration"
+  pubDate="October 4, 2026"
+  readMins={6}
+  app="confluence-page-approvals"
+  image="/apps/confluence-page-approvals/h1.png"
+>
+  <p>
+    If you have been through ISO 27001 or SOC 2, an auditor has asked you a version of this: show me
+    that this policy was reviewed and approved, by whom, and show me that the version in front of me
+    is the approved one.
+  </p>
+  <p>
+    Confluence Cloud has no native answer. CONFCLOUD-6373 asks for page approval workflows and has
+    560 votes. The page has version history, which tells you <em>that</em> it changed and who
+    changed it, and nothing about whether anyone signed it off.
+  </p>
+
+  <h2>Why the usual workarounds fail an audit</h2>
+  <ul>
+    <li><strong>A label like <code>approved</code>.</strong> Cheap and immediately wrong: a label has
+      no version. Someone approves v4, someone else edits to v7, and the label still says approved.
+      It is now evidence of something that is not true.</li>
+    <li><strong>A table at the top of the page.</strong> "Approved by Jane, 3 March." It is a table.
+      Anyone can type in it, including the author, and nothing ties the row to the version it
+      approved.</li>
+    <li><strong>A Jira ticket per approval.</strong> Audit-defensible and heavy enough that people
+      route around it. The ticket and the page also drift: the ticket says approved, the page has
+      moved on.</li>
+  </ul>
+  <p>
+    The failure is the same in all three. <strong>Approval gets recorded against the page rather
+    than against a version of the page.</strong> The entire value is in that distinction.
+  </p>
+
+  <h2>What a working approval needs</h2>
+  <ol>
+    <li><strong>Pinned to a version.</strong> The record says approved at v4, not approved.</li>
+    <li><strong>Automatically invalidated.</strong> When the page passes the approved version the
+      state turns stale on its own, with nobody remembering to clear anything.</li>
+    <li><strong>An approver list that is not self-service.</strong> The author cannot be the sole
+      approver.</li>
+    <li><strong>Visible on the page.</strong> Someone reading it should see the state without
+      knowing where else to look.</li>
+    <li><strong>Queryable.</strong> "Every approved page in this space" has to be answerable across
+      hundreds of pages, which means CQL, which means the state lives in an indexed content
+      property.</li>
+    <li><strong>Exportable.</strong> Who approved which version, when.</li>
+  </ol>
+
+  <h2>How far you can get yourself</h2>
+  <p>
+    The REST API will take you part way. Write a content property holding the approved version:
+  </p>
+  <pre><code>{`PUT /wiki/api/v2/pages/{id}/properties
+{"key": "approval", "value": {"state": "approved", "approvedVersion": 12}}`}</code></pre>
+  <p>
+    Then compare <code>approvedVersion</code> to the page's current version on read, and you have
+    points 1 and 2. What you cannot reasonably build without an app is the byline badge in front of
+    every reader, space-level approver configuration, and the guard rails that turn a stored field
+    into a control: approvers only, no self-approval, one decision per approver, quorum, and version
+    drift rejected rather than ignored.
+  </p>
+
+  <h2>The app</h2>
+  <p>
+    <a href={listing} {...listingTrack}>Page Approvals for Confluence</a> implements the state
+    machine directly: none to pending to approved or rejected, and approved to
+    <em>changed since approval</em> the moment the page's version passes the approved one.
+    Re-requesting on a new version discards the decisions on the old one, because those were
+    decisions about different text.
+  </p>
+  <p>
+    Per-space approvers and groups, a quorum of distinct approvers, no self-approval unless you
+    deliberately allow it, due dates, and a dashboard of pending, overdue and stale pages. State is
+    an indexed content property, so CQL finds approved pages. The audit CSV gives you the
+    who-approved-which-version table the auditor asked for.
+  </p>
+  <p>
+    Two limits worth knowing before you install rather than after.
+    <strong>Reminders are not emailed</strong>: the app makes no outbound call at all, which is what
+    lets it run entirely on Atlassian, so the overdue view is the reminder. And
+    <strong>the CQL value can lag the badge</strong>, because the page-updated trigger runs with no
+    user and on some sites the app identity cannot write a page property in that context. The badge,
+    dashboard and CSV read the record directly and are always current.
+  </p>
+  <p>
+    <a href={`${base}/atlassian/confluence-page-approvals`}>App details and screenshots</a>.
+  </p>
+</BlogPost>

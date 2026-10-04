@@ -1,0 +1,89 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'repo-docs-sync-for-confluence';
+const listing = withUtm('https://marketplace.atlassian.com/apps/2079639621/repo-docs-sync-for-confluence', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="Your Confluence documentation is wrong and nobody has noticed yet"
+  description="A wrong page looks exactly like a right one. Why chat-with-your-docs makes this worse rather than better, and the maintenance loop that compares a page to the code it claims to describe."
+  tag="Confluence for engineering teams"
+  pubDate="October 4, 2026"
+  readMins={6}
+  app="confluence-repo-docs-sync"
+  image="/apps/confluence-repo-docs-sync/h1.png"
+>
+  <p>
+    Every engineering organisation has the same quiet problem. A page in Confluence describes how a
+    service is configured. The service changed eight months ago. The page did not. Nobody is lying
+    and nobody is lazy: the page was correct when it was written, and there is no moment in anyone's
+    week that is "go and check whether the docs still match the code".
+  </p>
+  <p>
+    The failure is invisible by construction. <strong>A wrong page looks exactly like a right
+    one.</strong> You find out when a new engineer follows it, or during an incident, which is the
+    worst possible time to learn that the runbook describes a flag that was removed two releases
+    ago.
+  </p>
+
+  <h2>Why chat-with-your-docs makes this worse</h2>
+  <p>
+    The obvious move is to point an AI at Confluence and ask it questions. That category is
+    saturated and Rovo now does a version of it at no extra cost, so this is not a pitch against it.
+    It is a note that it does not solve this problem, for a structural reason:
+  </p>
+  <p>
+    <strong>A chatbot reading your documentation inherits the documentation's mistakes.</strong> If
+    the page says the timeout is 30 seconds and the code says 90, asking the bot gives you 30,
+    delivered fluently and with confidence. The answer is wrong and now it sounds authoritative. You
+    have added a layer that launders a stale fact into a trusted one.
+  </p>
+  <p>
+    The job is not retrieval. It is <strong>maintenance</strong>: comparing the page against the
+    code it claims to describe, and saying which one moved.
+  </p>
+
+  <h2>The do-it-yourself loop</h2>
+  <p>This is buildable today and worth doing even if you stop here.</p>
+  <ol>
+    <li><strong>Decide what each page documents.</strong> A page is about a path:
+      <code>services/billing/</code>, or a single file. Without that link there is nothing to
+      compare against, and this step is most of the value.</li>
+    <li><strong>Get the page in a diffable form.</strong>
+      <code>GET /wiki/api/v2/pages/&#123;id&#125;?body-format=storage</code>.</li>
+    <li><strong>Run an agent against both in CI.</strong> In a job with the repository checked out,
+      give Claude Code or Codex the page body and the path, and ask for a specific output: not "is
+      this right" but "return the corrected page body, list what changed and why, and cite the files
+      you read".</li>
+    <li><strong>Put a human in front of the result.</strong> Never write it straight back. An agent
+      that is confidently wrong about a page is worse than a stale page, because now it is stale
+      <em>and recently edited</em>, which looks trustworthy.</li>
+  </ol>
+  <p>
+    The hard parts are not the API calls. They are pinning the comparison to a commit so the result
+    is reproducible, keeping the proposal somewhere reviewable, and not losing a concurrent human
+    edit.
+  </p>
+
+  <h2>The app</h2>
+  <p>
+    <a href={listing} {...listingTrack}>Repo Docs Sync for Confluence</a> packages that loop. Link a
+    page to the repo path it documents. On demand from the page byline, or on a daily or weekly
+    schedule, your own CI runs the agent against the checked-out repo, and a proposal comes back:
+    the corrected body, a change summary, and the commit it was checked against.
+  </p>
+  <p>
+    Proposal first by default. A person opens the dialog, reads the summary, applies it. Direct apply
+    is opt-in per page, and if a human edited the page while the agent was working, the human wins
+    and the result is kept as a proposal instead.
+  </p>
+  <p>
+    Said plainly because it is the point of the architecture: this app
+    <strong>calls out of your tenant</strong>, to your CI and nowhere else, so it does not carry the
+    Runs on Atlassian badge that most of our apps do. Your repository is never cloned by us and your
+    model API key never reaches us. The egress is the product.
+    <a href={`${base}/atlassian/confluence-repo-docs-sync`}>App details and screenshots</a>.
+  </p>
+</BlogPost>

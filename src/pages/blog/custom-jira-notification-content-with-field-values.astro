@@ -1,0 +1,99 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'notification-composer-for-jira';
+const listing = withUtm('https://marketplace.atlassian.com/apps/2647351606/notification-composer-for-jira', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="How to put a field value in a Jira notification, and the 2005 request behind it"
+  description="Jira's notification scheme decides who gets told, not what they are told. Here is the Automation workaround, the notify API most admins have never seen, and an app that turns it into rules."
+  tag="Jira administration"
+  pubDate="October 4, 2026"
+  readMins={7}
+  app="jira-notification-composer"
+  image="/apps/jira-notification-composer/h1.png"
+>
+  <p>
+    JRACLOUD-7266 asks to customise the content of Jira notification emails. Opened in 2005, 1,596
+    votes, still open. On the Service Management side, JSDCLOUD-4642 has 1,283 votes and
+    JSDCLOUD-2044 has 739, asking for the same thing in different words.
+  </p>
+  <p>
+    What people want is modest. A notification that says which customer tier the ticket belongs to.
+    A status-change email that includes the comment that came with the transition. An alert that
+    names the field that changed and what it changed from. Jira's notification scheme decides
+    <strong>who</strong> gets told. It has almost nothing to say about <strong>what</strong> they
+    are told.
+  </p>
+
+  <h2>Where the notification scheme stops</h2>
+  <ul>
+    <li><strong>It can</strong> map events to recipient groups: reporter, assignee, watchers, a
+      project role, a group.</li>
+    <li><strong>It cannot</strong> change the body. Layout, fields shown and wording are Jira's.</li>
+    <li><strong>It cannot</strong> condition on a field value. "Only notify when Customer Tier is
+      Enterprise" is not expressible.</li>
+  </ul>
+  <p>
+    So the moment your requirement contains a field name, you are out of the scheme entirely.
+  </p>
+
+  <h2>The Automation workaround</h2>
+  <p>
+    Automation rules can send email, and this is where most teams land:
+  </p>
+  <p>
+    <em>When: issue transitioned &rarr; If: JQL matches &rarr; Then: send email</em>, with smart
+    values like <code>&#123;&#123;issue.fields.customfield_10042&#125;&#125;</code> and
+    <code>&#123;&#123;issue.comments.last.body&#125;&#125;</code> in the body.
+  </p>
+  <p>It genuinely works. Four things end it:</p>
+  <ul>
+    <li><strong>It is not Jira's notification.</strong> Email sent by Automation bypasses the
+      notification scheme, does not thread with the issue's other mail, and knows nothing about JSM
+      request participants.</li>
+    <li><strong>You hand-list recipients in every rule.</strong> You rebuild "reporter, assignee and
+      watchers, except whoever did the thing" each time, and the "except the actor" part is the one
+      everybody forgets, so people get emailed about their own edits.</li>
+    <li><strong>Rules multiply.</strong> One per project per event per variation, each holding its
+      own copy of the HTML, with no way to see them side by side.</li>
+    <li><strong>Execution limits.</strong> High-volume sites burn their monthly automation budget on
+      notification traffic that was never really automation.</li>
+  </ul>
+
+  <h2>The API most admins have never seen</h2>
+  <p>
+    Jira will send <em>its own</em> notification about an issue, with a body you supply:
+  </p>
+  <pre><code>{`POST /rest/api/3/issue/{issueKey}/notify
+{"subject": "...", "htmlBody": "...", "textBody": "...",
+ "to": {"reporter": true, "assignee": true, "watchers": true}}`}</code></pre>
+  <p>
+    That detail is the whole thing. The message goes out through Jira's mailer, to recipients Jira
+    resolves, and <strong>Jira delivers only to people who can actually browse the issue</strong>.
+    You are not building a mail sender and you are not maintaining SMTP credentials. You are
+    supplying the body Jira was never going to let you change.
+  </p>
+
+  <h2>The app</h2>
+  <p>
+    <a href={listing} {...listingTrack}>Notification Composer for Jira</a> is a rule builder over
+    that endpoint. Rules match on project, event kind, target status, changed fields, public versus
+    internal comments, and an optional JQL check, so "only when Customer Tier is Enterprise" is a
+    condition rather than a separate rule.
+  </p>
+  <p>
+    The body is a template over the issue: any field by id or by name, the latest comment, the
+    transition, recent activity. HTML escaped by default with a deliberate raw escape hatch.
+    Recipients resolve as reporter, assignee, watchers, JSM participants, named users or groups,
+    <strong>with the actor excluded</strong>. Re-delivered events are idempotent, so a replayed
+    webhook does not produce a second email. Every send is logged with recipients and outcome, so
+    "did that go out, and to whom" is answerable.
+  </p>
+  <p>
+    No SMTP and no egress: the app renders on your site and hands the message to Jira.
+    <a href={`${base}/atlassian/jira-notification-composer`}>App details and screenshots</a>.
+  </p>
+</BlogPost>

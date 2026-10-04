@@ -1,0 +1,107 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'issue-templates-defaults-and-recurring-for-jira';
+const listing = withUtm('https://marketplace.atlassian.com/apps/1557180267/issue-templates-defaults-and-recurring-for-jira', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="How to set default field values on the Jira create screen, and the 2004 request behind it"
+  description="JRACLOUD-4812 has 2,798 votes and is still open. Here is what Jira actually offers, the Automation workaround and where it runs out, the UI modifications API that does it properly, and an app that packages all three."
+  tag="Jira administration"
+  pubDate="October 4, 2026"
+  readMins={7}
+  app="jira-issue-templates"
+  image="/apps/jira-issue-templates/h2.png"
+>
+  <p>
+    JRACLOUD-4812 asks for default values on system fields. It was opened in 2004, it has 2,798
+    votes, and it is still open. The request is not exotic: a team wants every bug in their project
+    to start with Priority set to Medium, the right component selected, and a description skeleton
+    already in the box, so the person filing it fills in what is actually specific to their bug
+    instead of re-deciding six fields that are identical every time.
+  </p>
+  <p>
+    Every admin who has tried to improve issue quality has wanted this, and every one of them has
+    found the same thing. This post covers what Jira Cloud genuinely gives you, the workaround most
+    teams land on and the exact point it stops being good enough, and the API that does the job
+    properly.
+  </p>
+
+  <h2>What Jira Cloud actually offers</h2>
+  <ul>
+    <li><strong>Defaults exist for some custom field types.</strong> A select list can carry a
+      default option in its field configuration. That covers a slice of the problem and none of the
+      system fields the request is about.</li>
+    <li><strong>There is no native issue template.</strong> No "create from template" anywhere in
+      the product.</li>
+    <li><strong>There is no recurring issue.</strong> Work that happens every week is created by
+      hand, or forgotten.</li>
+  </ul>
+
+  <h2>The Automation workaround, and its ceiling</h2>
+  <p>
+    The standard answer is a rule that fires after creation:
+  </p>
+  <p>
+    <em>When: issue created &rarr; If: project = Payments AND type = Bug &rarr; Then: edit issue,
+    set Priority = Medium, Component = API.</em>
+  </p>
+  <p>
+    This works. For one project and three fields it is the right answer and costs nothing. Three
+    things end it:
+  </p>
+  <ul>
+    <li><strong>It happens after the fact.</strong> The person filing the issue still stares at an
+      empty form. The values appear a second later. The part that actually improves issue quality,
+      a description skeleton in front of someone while they are typing, is exactly the part a
+      post-creation rule cannot do.</li>
+    <li><strong>Every issue carries an automation edit.</strong> Your history gains a machine edit
+      on every single issue, which is noise in precisely the audit trail you wanted to keep clean.</li>
+    <li><strong>It consumes execution budget.</strong> On a busy site, field defaulting quietly
+      becomes a meaningful share of your monthly automation limit.</li>
+  </ul>
+
+  <h2>The mechanism that does it properly</h2>
+  <p>
+    Jira does expose the right hook, but only to apps: <code>jira:uiModifications</code> can set
+    field values on the Global Issue Create screen <em>before</em> anyone types. That is how the
+    native behaviour would be built if it were built, and it is the difference between a form that
+    opens pre-filled and a form that gets corrected behind you.
+  </p>
+  <p>
+    The honest limit, which matters when you evaluate anything in this category: the UI
+    modifications API covers a defined set of field types. Anything outside it cannot be pre-filled.
+    A tool that silently drops those fields is worse than one that refuses them, because you find
+    out months later when someone notices the default never applied.
+  </p>
+
+  <h2>Templates and recurrence are the same complaint</h2>
+  <p>
+    Teams that want defaults almost always want two neighbours of it. <strong>Templates</strong>,
+    because the description skeleton is really a saved issue with subtasks. And
+    <strong>recurring issues</strong>, because the weekly access review is the same issue every
+    week. Both get approximated with a cloned "template issue" that then shows up in every board
+    and report, or with one Automation rule per recurring thing.
+  </p>
+
+  <h2>The app</h2>
+  <p>
+    <a href={listing} {...listingTrack}>Issue Templates, Defaults and Recurring for Jira</a> does
+    the three together. Templates of fields and subtasks, applied to an existing issue or used to
+    create a new one. Create-screen defaults per project and issue type through the UI modifications
+    API, with unsupported field types reported when you save the rule rather than dropped. Recurring
+    schedules on a daily, weekly or monthly cadence.
+  </p>
+  <p>
+    One design decision worth stating because it affects your audit trail: when a person applies a
+    template, the write runs <strong>as that person</strong>, with their permissions and their name
+    in the issue history. Only recurring creation runs as the app, because no person is present. An
+    app that does everything as itself is easier to build and makes your history useless.
+  </p>
+  <p>
+    Runs entirely on Atlassian Forge, inside your own site.
+    <a href={`${base}/atlassian/jira-issue-templates`}>App details and screenshots</a>.
+  </p>
+</BlogPost>

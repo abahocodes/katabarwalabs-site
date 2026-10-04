@@ -5,6 +5,41 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 // Hand-maintained post list (newest first). Add an entry when you publish a post.
 const posts = [
   {
+    slug: 'mermaid-plantuml-diagrams-in-confluence',
+    title: 'Your AI assistant writes Mermaid. Why does it look so blurry in Confluence?',
+    excerpt: 'Ask Claude or ChatGPT for an architecture diagram and you get Mermaid. Paste it into Confluence and you get a fuzzy fixed-size PNG. Why that happens, and what a diagram macro has to do instead.',
+    tag: 'Confluence for engineering teams',
+    date: 'October 4, 2026',
+  },
+  {
+    slug: 'confluence-documentation-drift-from-code',
+    title: 'Your Confluence documentation is wrong and nobody has noticed yet',
+    excerpt: 'A wrong page looks exactly like a right one. Why chat-with-your-docs makes this worse rather than better, and the maintenance loop that compares a page to the code it claims to describe.',
+    tag: 'Confluence for engineering teams',
+    date: 'October 4, 2026',
+  },
+  {
+    slug: 'confluence-page-approval-document-control',
+    title: 'Document control in Confluence: proving a page was approved, and noticing when it changes',
+    excerpt: 'A label saying approved is evidence of something that stopped being true. Why approval has to be pinned to a version, and what an auditor actually asks for.',
+    tag: 'Confluence administration',
+    date: 'October 4, 2026',
+  },
+  {
+    slug: 'custom-jira-notification-content-with-field-values',
+    title: 'How to put a field value in a Jira notification, and the 2005 request behind it',
+    excerpt: "Jira's notification scheme decides who gets told, not what they are told. The Automation workaround, the notify API most admins have never seen, and where each one stops.",
+    tag: 'Jira administration',
+    date: 'October 4, 2026',
+  },
+  {
+    slug: 'jira-default-field-values-on-the-create-screen',
+    title: 'How to set default field values on the Jira create screen, and the 2004 request behind it',
+    excerpt: 'JRACLOUD-4812 has 2,798 votes and is still open. What Jira actually offers, the Automation workaround and where it runs out, and the UI modifications API that does it properly.',
+    tag: 'Jira administration',
+    date: 'October 4, 2026',
+  },
+  {
     slug: 'send-jira-issue-to-coding-agent-in-your-own-ci',
     title: 'How to send a Jira issue to Claude Code or Codex in your own CI, and get the PR back on the ticket',
     excerpt: 'The assign-to-agent connectors run the agent on their servers and speak GitHub only. Here is the repository_dispatch and pipeline-trigger method that keeps your code and API keys in your own CI, and an app that packages it.',

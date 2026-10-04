@@ -1,0 +1,75 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'crisp-diagrams-mermaid-plantuml-excalidraw-for-confluence';
+const listing = withUtm('https://marketplace.atlassian.com/apps/3911881842/crisp-diagrams-mermaid-plantuml-excalidraw-for-confluence', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="Your AI assistant writes Mermaid. Why does it look so blurry in Confluence?"
+  description="Ask Claude or ChatGPT for an architecture diagram and you get Mermaid. Paste it into Confluence and you get a fuzzy fixed-size PNG. Here is why that happens and what a diagram macro has to do instead."
+  tag="Confluence for engineering teams"
+  pubDate="October 4, 2026"
+  readMins={5}
+  app="confluence-crisp-diagrams"
+  image="/apps/confluence-crisp-diagrams/h1.png"
+>
+  <p>
+    Ask any AI assistant for an architecture diagram, a sequence diagram or an ER model and you get
+    Mermaid back. It is the lingua franca now: Claude writes it, ChatGPT writes it, GitHub renders it
+    in READMEs, and your engineers paste it into pull requests without thinking about it.
+  </p>
+  <p>
+    Then someone pastes it into Confluence and it looks terrible. Fuzzy at any zoom, a fixed box that
+    does not fit the page, and when the page is exported to PDF the diagram is missing or wrong. The
+    diagram was fine. The rendering was not.
+  </p>
+
+  <h2>Why it goes blurry</h2>
+  <p>
+    Most diagram macros for Confluence take the same shortcut: render the diagram once, server side,
+    to a <strong>raster image at a fixed pixel size</strong>, and embed that. Everything that annoys
+    you follows from that one decision.
+  </p>
+  <ul>
+    <li><strong>It is a bitmap.</strong> Zoom in and you are enlarging pixels. On a high-density
+      display it is soft before you even zoom.</li>
+    <li><strong>The size is decided at render time,</strong> not at read time, so a wide sequence
+      diagram gets squeezed into a box that was chosen by the macro.</li>
+    <li><strong>It often needs a render server.</strong> Which means your diagram source leaves your
+      tenant, which means a security review, which is how a two-minute diagram becomes a two-week
+      procurement question.</li>
+    <li><strong>The engine lags.</strong> Mermaid ships quickly. A macro pinned to a version from two
+      years ago rejects syntax your assistant just wrote.</li>
+  </ul>
+
+  <h2>What a diagram macro has to do instead</h2>
+  <ol>
+    <li><strong>Render to SVG, in the browser.</strong> Vector scales to any size and stays sharp,
+      and rendering client side means the source never leaves the tenant.</li>
+    <li><strong>Let the reader zoom.</strong> A dense diagram is unreadable in a page column no
+      matter how sharp it is. Full screen with scroll-to-zoom and drag-to-pan is the fix.</li>
+    <li><strong>Survive export.</strong> PDF and Word exports do not run your JavaScript. If the
+      macro renders only in the browser, the export loses the diagram. The way around it is to
+      attach a rendered image to the page when the diagram is saved, so the exporter has something
+      real to place.</li>
+    <li><strong>Accept what people actually paste.</strong> A fenced code block copied from a chat,
+      or a mermaid.live link, should just work rather than needing to be unwrapped by hand.</li>
+    <li><strong>Follow the theme.</strong> A white diagram in a dark-mode page is a glare bomb.</li>
+  </ol>
+
+  <h2>The app</h2>
+  <p>
+    <a href={listing} {...listingTrack}>Crisp Diagrams</a> renders Mermaid, PlantUML, D2, DBML and
+    Excalidraw in your browser inside Confluence Cloud. Vector SVG that fills the page, click for
+    full screen with scroll-to-zoom and drag-to-pan, live preview with errors that name the line,
+    light and dark theme following, and a PNG attached on save so PDF and Word exports show the
+    diagram.
+  </p>
+  <p>
+    PlantUML runs in the browser too, with no Graphviz install and no render server. No account, no
+    diagram limit, no external servers, and it is free.
+    <a href={`${base}/atlassian/confluence-crisp-diagrams`}>App details and screenshots</a>.
+  </p>
+</BlogPost>

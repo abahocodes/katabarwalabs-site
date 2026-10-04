@@ -5,7 +5,7 @@
 
 export const ORIGIN = 'https://katabarwalabs.dev';
 export const ORG_NAME = 'Katabarwa Labs';
-export const SUPPORT_EMAIL = 'support@llmgraph.ai';
+export const SUPPORT_EMAIL = 'support@katabarwalabs.dev';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 

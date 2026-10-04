@@ -40,7 +40,7 @@ const jsonLd = [
     { q: 'Does any data leave my subscription?', a: 'No. The function runs in your subscription and writes only to your configured alert destination. Katabarwa Labs operates no backend and receives nothing.' },
     { q: 'How is it billed?', a: (app.price ? `A flat USD ${app.price} per month` : 'A flat monthly fee') + ' on your Azure bill through the Marketplace, plus the small consumption cost of the function itself. No per-resource or per-user pricing.' },
     { q: 'How do I remove it?', a: 'Delete the managed application from the Azure portal. Its resource group and identity go with it, and any role you granted can be removed the same way.' },
-    { q: 'Where do I get support?', a: 'support@llmgraph.ai, or the support page on katabarwalabs.dev.' },
+    { q: 'Where do I get support?', a: 'support@katabarwalabs.dev, or the support page on katabarwalabs.dev.' },
   ]),
 ];
 ---
@@ -120,7 +120,7 @@ const jsonLd = [
       <div><h3 class="text-[16px] font-bold text-ink">How do I remove it?</h3>
         <p class="mt-1 text-[16px] text-ink2">Delete the managed application from the Azure portal. Its resource group and identity go with it, and any role you granted can be removed the same way.</p></div>
       <div><h3 class="text-[16px] font-bold text-ink">Where do I get support?</h3>
-        <p class="mt-1 text-[16px] text-ink2"><a href="mailto:support@llmgraph.ai" class="font-semibold text-brand">support@llmgraph.ai</a>, or the <a href={`${base}/support`} class="font-semibold text-brand">support page</a>.</p></div>
+        <p class="mt-1 text-[16px] text-ink2"><a href="mailto:support@katabarwalabs.dev" class="font-semibold text-brand">support@katabarwalabs.dev</a>, or the <a href={`${base}/support`} class="font-semibold text-brand">support page</a>.</p></div>
     </div>
   </section>
 
