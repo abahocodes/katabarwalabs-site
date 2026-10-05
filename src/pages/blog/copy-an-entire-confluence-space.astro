@@ -1,0 +1,109 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'space-copy-and-templates-for-confluence';
+const listing = withUtm('https://marketplace.atlassian.com/apps/2815938995/space-copy-and-templates-for-confluence', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="Copying an entire Confluence space: what breaks, and the one thing that breaks silently"
+  description="CONFCLOUD-3191 was opened in 2005 and is still open. Why copying a page tree is not copying a space, how internal links quietly keep pointing at the original, and what a correct copy has to do."
+  tag="Confluence administration"
+  pubDate="October 5, 2026"
+  readMins={6}
+  app="confluence-space-copy"
+  image="/apps/confluence-space-copy/h1.png"
+>
+  <p>
+    You have a space that someone got right. A client onboarding space, a project template, a
+    runbook set. You want another one just like it. Twenty-one years after someone first asked,
+    Confluence Cloud still has no button for that: <strong>CONFCLOUD-3191, "Easily create a copy of
+    an entire space", was opened in May 2005, has 882 votes, and is Gathering Interest.</strong>
+  </p>
+
+  <h2>Copying a page tree is not copying a space</h2>
+  <p>
+    The native <em>Copy page tree</em> action is good and it is not the same thing. It copies pages
+    beneath a parent, with their attachments, into a destination you have already created. What it
+    does not do is the part people actually ask for:
+  </p>
+  <ul>
+    <li><strong>The space itself.</strong> You create the space by hand first — key, name, home
+      page — and the copy drops into it.</li>
+    <li><strong>The links.</strong> This is the one that breaks silently, and it is the whole
+      subject of this post.</li>
+    <li><strong>Restrictions.</strong> Page restrictions do not come along, which is usually right
+      and occasionally exactly wrong.</li>
+  </ul>
+
+  <h2>The silent failure: links that still point home</h2>
+  <p>
+    A Confluence page body in storage format refers to another page in one of two ways. By space key
+    and title:
+  </p>
+  <pre><code>{`<ac:link><ri:page ri:space-key="OLD" ri:content-title="Runbook" /></ac:link>`}</code></pre>
+  <p>
+    …or by page id, as a plain URL like <code>/pages/123456/Runbook</code>.
+  </p>
+  <p>
+    Copy the tree and both forms survive the copy intact — still pointing at the original space.
+    Nothing errors. Every link still resolves, to the wrong page. Your new client's space has a
+    navigation structure that quietly walks visitors back into the space you copied from, and you
+    find out when one of them edits a page there.
+  </p>
+  <p>
+    The first form is fixable: rewrite <code>ri:space-key</code> and any
+    <code>/spaces/OLD/</code> path to the new key as you copy each body. The second form is
+    genuinely harder, and worth being precise about, because this is the limit of any solution
+    including ours: <strong>a page id does not exist until that page has been created.</strong> A
+    link from page A to page B, written by id, cannot be rewritten while copying A if B has not been
+    copied yet. Honest handling means rewriting what can be rewritten, saying so about the rest, and
+    not claiming a clean copy.
+  </p>
+
+  <h2>What you can build yourself</h2>
+  <p>
+    The REST API gives you all the pieces. Create the space, then walk the tree:
+  </p>
+  <pre><code>{`POST /wiki/rest/api/space                        → create the target space
+GET  /wiki/api/v2/pages/{id}?body-format=storage → source body
+GET  /wiki/api/v2/pages/{id}/children            → the frontier
+POST /wiki/api/v2/pages                          → the copy, under its new parent`}</code></pre>
+  <p>
+    Two things will bite a script that does this. <strong>Scopes:</strong> the v2 endpoints accept
+    only granular scopes — <code>read:page:confluence</code>, <code>write:page:confluence</code> —
+    and a classic scope gets you <code>401 scope does not match</code>, while some v1 endpoints you
+    still need for labels, attachments and restrictions take the classic ones. You will hold both
+    sets. <strong>Time:</strong> a few hundred pages exceeds any single request, so the walk has to
+    be a resumable job with its progress and its page-id map persisted, not a loop.
+  </p>
+
+  <h2>The app</h2>
+  <p>
+    <a href={listing} {...listingTrack}>Space Copy &amp; Templates for Confluence</a> is that job,
+    done carefully. The target space is created <strong>as you</strong>, so you own it. Pages are
+    copied breadth-first, 20 per invocation through the Forge async queue, re-enqueuing until the
+    frontier is empty — a 4,000-page space finishes rather than timing out, and a page that fails is
+    recorded and skipped rather than ending the run. Bodies get the link rewrite, labels and
+    attachments come across, restrictions are opt-in. Any space can be saved as a template and
+    stamped out again.
+  </p>
+  <p>
+    It is permission-safe by construction: only spaces you can read are offered, and every source
+    page is confirmed readable by you before it is copied, so a copy can never widen access to
+    anything.
+  </p>
+  <p>
+    The limits, stated before you install rather than after.
+    <strong>Links by page id still point at the source</strong>, for the reason above.
+    <strong>Blog posts, comments and page history are not copied</strong> — you get the current
+    version of each page. <strong>Space permissions are not copied</strong>; the new space gets your
+    defaults. And it copies pages, not Confluence's page-template objects: a "space template" here
+    means a space used as a blueprint, which is what people building this usually mean, and is not
+    what CONFCLOUD-7752 asks for.
+  </p>
+  <p>
+    <a href={`${base}/atlassian/confluence-space-copy`}>App details and screenshots</a>.
+  </p>
+</BlogPost>

@@ -1,0 +1,107 @@
+---
+import BlogPost from '../../layouts/BlogPost.astro';
+import { withUtm, track } from '../../lib/links';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const listingSlug = 'portal-extension-for-jsm-fields-sla-assignee-on-portal';
+const listing = withUtm('https://marketplace.atlassian.com/apps/834555331/portal-extension-for-jsm-fields-sla-assignee-on-portal', listingSlug, 'blog-post');
+const listingTrack = track('atlassian', listingSlug, 'blog-post');
+---
+<BlogPost
+  title="Showing customers their own request details: fields, SLA and assignee on the JSM portal"
+  description="JSDCLOUD-4328 has been open for ten years. Why the customer portal shows so little, what you can and cannot do about it with automation and the REST API, and the one rule any solution has to obey."
+  tag="Jira Service Management"
+  pubDate="October 5, 2026"
+  readMins={6}
+  app="jsm-portal-extension"
+  image="/apps/jsm-portal-extension/h1.png"
+>
+  <p>
+    A customer raises a request. An agent triages it, sets the environment, picks a target date,
+    fills in the custom field your process depends on, and assigns it. The customer, looking at the
+    same request on the portal, sees a summary, a description, a status and the comments. Everything
+    added after submission is invisible to the person waiting on it.
+  </p>
+  <p>
+    So they ask in a comment. An agent answers by hand. That exchange is the single most common
+    avoidable comment thread in a service desk, and it is the reason
+    <strong>JSDCLOUD-4328, "Add fields (view only) in Customer Portal", has 1,724 votes</strong>.
+    It was opened in September 2016 and is still Under Consideration ten years later. Its siblings
+    tell the same story: the assignee (JSDCLOUD-328, 887 votes), linked requests
+    (JSDCLOUD-4636, 857), the SLA (JSDCLOUD-325, 654).
+  </p>
+
+  <h2>Why the portal shows so little</h2>
+  <p>
+    It is a deliberate design, not an oversight. The portal is a different product surface from the
+    agent view, with a different permission model: a customer is not a licensed Jira user, so the
+    portal cannot simply render the issue view with fields removed. It renders only what the request
+    type's form declared, and the request form is an input, not an output. Anything an agent fills
+    in afterwards was never part of that form, so there is nowhere for it to appear.
+  </p>
+  <p>
+    That also explains why the usual escape hatches are unsatisfying.
+  </p>
+
+  <h2>What you can do yourself, and where it stops</h2>
+  <ul>
+    <li><strong>An automation rule that comments the value to the customer.</strong> It works and it
+      is one-way: the comment is a snapshot. Change the field and the thread now contains two
+      answers, the stale one above the fresh one, and the customer has to work out which is current.</li>
+    <li><strong>Appending the value to the description.</strong> Same staleness, plus you have now
+      edited the customer's own text.</li>
+    <li><strong>Reading it yourself through the API.</strong> The data is all there:
+      <code>{`GET /rest/servicedeskapi/request/{key}`}</code> returns the request with its field values
+      and <code>{`GET /rest/servicedeskapi/request/{key}/sla`}</code> returns the clocks with their
+      remaining time and breach state.</li>
+  </ul>
+  <p>
+    The problem with the third option is not fetching the data, it is <em>where you render it</em>.
+    There is exactly one extension point that puts anything inside a customer's view of their own
+    request, and it is a Forge module. A standalone page you build is a second place for a customer
+    to look, which is not a solution to "the customer cannot see it".
+  </p>
+
+  <h2>The rule any solution has to obey</h2>
+  <p>
+    Showing a customer more carries one real risk, and it is worth being explicit about it: an app
+    that reads with its own permissions and then renders to whoever is looking will eventually show
+    the wrong person something. The data is fetched with app credentials, so the app's permissions
+    are not the customer's.
+  </p>
+  <p>
+    The rule that removes the risk is to <strong>verify the viewer first, as themselves</strong>:
+    fetch the request with the viewer's identity before anything renders, and fail closed if that
+    call does not succeed. A viewer who could not open the request on their own cannot be shown a
+    panel about it. The same check has to run per linked request, or "related requests" becomes a
+    way to enumerate issues the customer was never party to.
+  </p>
+
+  <h2>The app</h2>
+  <p>
+    <a href={listing} {...listingTrack}>Portal Extension for JSM</a> is that panel. An admin picks,
+    per service desk and with per-request-type overrides, which fields customers may see read-only,
+    whether the assignee shows, which SLA clocks show, and a short note to attach to each status so
+    "Waiting for approval" can say what is being waited on. Related requests are listed only when
+    the per-link as-the-customer check passes.
+  </p>
+  <p>
+    Two deliberate constraints. The assignee is <strong>opt-in per desk</strong>, because plenty of
+    teams never want a named engineer exposed to customers, and that should be a decision rather
+    than a side effect of installing something. And comments, attachments, worklogs and security
+    fields <strong>cannot be selected at all</strong> — not "are not selected by default" — so a
+    misconfiguration cannot leak them.
+  </p>
+  <p>
+    The honest limits. The panel renders <strong>beside</strong> the native request form and cannot
+    restyle or hide it; Atlassian gives apps no hook for that, so the "Share with" control in
+    particular stays where it is. And it shows values, it never writes them: if what you need is the
+    customer <em>editing</em> a field after submitting, that is JSDCLOUD-93, the portal gives apps
+    no way to write back, and no app can honestly claim otherwise today.
+  </p>
+  <p>
+    Every scope it holds is a read scope, and the only thing it stores is your own configuration.
+  </p>
+  <p>
+    <a href={`${base}/atlassian/jsm-portal-extension`}>App details and screenshots</a>.
+  </p>
+</BlogPost>
