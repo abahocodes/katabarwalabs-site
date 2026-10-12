@@ -662,7 +662,7 @@ export const atlassianApps: AtlassianApp[] = [
     title: 'Page approval workflow for Confluence with version-pinned sign-off and an audit trail',
     tagline: 'Request, approve and reject pages with per-space approvers and a quorum, a state badge on every page, and automatic invalidation when an approved page is edited.',
     description: 'Page Approvals for Confluence gives you document control an auditor accepts: approval pinned to a page version, a byline badge showing the state, automatic change-since-approval when the page moves on, per-space approvers with a quorum, a dashboard of pending and overdue pages, and a CSV of who approved which version.',
-    problem: 'CONFCLOUD-6373 asks for page approval workflows and has 560 votes. Confluence Cloud has version history, which tells you that a page changed and who changed it, and nothing about whether anyone signed it off. The usual workarounds fail for one shared reason: a label or a table at the top of the page records approval against the page rather than against a version of it, so the record keeps saying approved after the page has moved on.',
+    problem: 'On Confluence Standard there is no approval step at all, and native Approvals ships on Premium and Enterprise only. Confluence Cloud has version history, which tells you that a page changed and who changed it, and nothing about whether anyone signed it off. The usual workarounds fail for one shared reason: a label or a table at the top of the page records approval against the page rather than against a version of it, so the record keeps saying approved after the page has moved on.',
     features: [
       'Approval pinned to a version. The record says approved at v12, not approved.',
       'Automatic invalidation: when the page version passes the approved one the state becomes changed since approval, with nobody having to remember.',
@@ -692,7 +692,6 @@ export const atlassianApps: AtlassianApp[] = [
     listing: 'https://marketplace.atlassian.com/apps/2615281760/page-approvals-for-confluence',
     docs: docsBase + 'confluence-page-approvals.md',
     blog: '/blog/confluence-page-approval-document-control',
-    origin: { ticket: 'CONFCLOUD-6373', title: 'Page approval workflow', votes: '560 votes' },
     atlassianDocs: [
       { label: 'Page history and versions', url: 'https://support.atlassian.com/confluence-cloud/docs/view-and-compare-page-versions/' },
       { label: 'CQL field reference', url: 'https://developer.atlassian.com/cloud/confluence/cql-fields/' },
